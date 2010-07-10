@@ -1798,6 +1798,9 @@
     <ClCompile Include="..\scripts\kalimdor\durotar.cpp">
       <Filter>scripts\kalimdor</Filter>
     </ClCompile>
+    <ClCompile Include="..\scripts\custom\custom_events.cpp">
+      <Filter>scripts\custom</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\base\escort_ai.h">

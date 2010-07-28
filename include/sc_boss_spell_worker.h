@@ -90,6 +90,13 @@ struct SpellTable
     int32  textEntry;                                  // Text entry from script_text for this spell
 };
 
+class MANGOS_DLL_DECL BossAura : public Aura
+{
+    public:
+        BossAura(const SpellEntry *spell, SpellEffectIndex effect, int32 *basepoints, Unit *target, Unit *caster) : Aura(spell, effect, basepoints, target, caster)
+            {}
+};
+
 struct MANGOS_DLL_DECL BSWScriptedAI : public ScriptedAI
 {
     public:

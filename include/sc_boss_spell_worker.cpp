@@ -526,13 +526,12 @@ bool BSWScriptedAI::_doRemove(uint8 m_uiSpellIdx, Unit* pTarget, uint8 index)
 
         if (_auraCount(m_uiSpellIdx,pTarget,(SpellEffectIndex)index) > 1)
         {
-            SpellAuraHolder *holder = pTarget->GetSpellAuraHolder(pSpell->m_uiSpellEntry[currentDifficulty], pTarget->GetGUID());
-            if (holder->ModStackAmount(-1))
-            {
-                pTarget->RemoveSpellAuraHolder(holder, AURA_REMOVE_BY_DISPEL);
+            if (pTarget->GetAura(pSpell->m_uiSpellEntry[currentDifficulty],(SpellEffectIndex)index)->modStackAmount(-1))
                 return true;
-            } else return false;
-        } else pTarget->RemoveAurasDueToSpell(pSpell->m_uiSpellEntry[currentDifficulty]);
+            else
+                return false;
+		}
+        else pTarget->RemoveAurasDueToSpell(pSpell->m_uiSpellEntry[currentDifficulty]);
     return true;
 };
 
@@ -570,24 +569,12 @@ bool BSWScriptedAI::_doAura(uint8 m_uiSpellIdx, Unit* pTarget, SpellEffectIndex 
     else debug_log("BSW: adding new aura from spell %u index %u",pSpell->m_uiSpellEntry[currentDifficulty], index);
 
     SpellEntry const *spell = (SpellEntry *)GetSpellStore()->LookupEntry(pSpell->m_uiSpellEntry[currentDifficulty]);
-    if (spell && spell->Effect[index] < TOTAL_SPELL_EFFECTS)
+    if (spell)
     {
-        if (IsSpellAppliesAura(spell, (1 << EFFECT_INDEX_0) | (1 << EFFECT_INDEX_1) | (1 << EFFECT_INDEX_2)) || IsSpellHaveEffect(spell, SPELL_EFFECT_PERSISTENT_AREA_AURA))
-        {
-            SpellAuraHolder *holder = CreateSpellAuraHolder(spell, pTarget, pTarget);
-
-            int32 basepoint = pSpell->varData ?  pSpell->varData - 1 : spell->EffectBasePoints[index] + 1;
-
-            if( IsAreaAuraEffect(spell->Effect[index]) ||
-                spell->Effect[index] == SPELL_EFFECT_APPLY_AURA  ||
-                spell->Effect[index] == SPELL_EFFECT_PERSISTENT_AREA_AURA )
-                {
-                    Aura *aura = CreateAura(spell, SpellEffectIndex(index), &basepoint, holder, pTarget);
-                    holder->AddAura(aura, SpellEffectIndex(index));
-                    return true;
-                }
-        }
-    }
+        int32 basepoint = pSpell->varData ?  pSpell->varData - 1 : spell->EffectBasePoints[index] + 1;
+        if (pTarget->AddAura(new BossAura(spell, index, &basepoint, pTarget, pTarget)))
+            return true;
+    };
 
     error_log("BSW: FAILED adding aura from spell %u index %u",pSpell->m_uiSpellEntry[currentDifficulty], index);
 

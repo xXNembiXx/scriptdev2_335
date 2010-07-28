@@ -25,8 +25,6 @@ EndScriptData */
 
 enum
 {
-    EMOTE_GENERIC_FRENZY            = -1000002,
-
     SPELL_PERIODIC_MANA_BURN        = 812,
     SPELL_MENDING                   = 2147,
     SPELL_PERIODIC_SHADOW_STORM     = 2148,
@@ -36,8 +34,6 @@ enum
     SPELL_SHADOW_FROST_REFLECT      = 19595,
     SPELL_PERIODIC_KNOCK_AWAY       = 21737,
     SPELL_THORNS                    = 25777,
-
-    SPELL_ENRAGE                    = 8599,
 
     MAX_BUDDY                       = 4
 };
@@ -51,23 +47,20 @@ struct MANGOS_DLL_DECL npc_anubisath_sentinelAI : public ScriptedAI
     }
 
     uint32 m_uiMyAbility;
-    bool m_bEnraged;
+    uint32 m_uiMyTransfer;
 
     std::list<uint64> m_lAssistList;
 
     void Reset()
     {
         m_uiMyAbility = 0;
-        m_bEnraged = false;
+        m_uiMyTransfer = 0;
     }
 
     void JustReachedHome()
     {
         for(std::list<uint64>::iterator itr = m_lAssistList.begin(); itr != m_lAssistList.end(); ++itr)
         {
-            if (*itr == m_creature->GetGUID())
-                continue;
-
             if (Creature* pBuddy = (Creature*)Unit::GetUnit(*m_creature, *itr))
             {
                 if (pBuddy->isDead())
@@ -80,46 +73,60 @@ struct MANGOS_DLL_DECL npc_anubisath_sentinelAI : public ScriptedAI
     {
         SetAbility();
         InitSentinelsNear(pWho);
+        DoTransferAbility(false);
+    }
+
+    void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
+    {
+        if (!m_uiMyAbility && pCaster->GetEntry() == m_creature->GetEntry())
+            m_uiMyAbility = pSpell->Id;
     }
 
     void JustDied(Unit* pKiller)
     {
-        DoTransferAbility();
+        DoTransferAbility(true);
     }
 
-    // this way will make it quite possible that sentinels get the same buff as others, need to fix that, it should be one unique each
     void SetAbility()
     {
         switch(urand(0, 8))
         {
-            case 0: m_uiMyAbility = SPELL_MENDING; break;
-            case 1: m_uiMyAbility = SPELL_PERIODIC_KNOCK_AWAY; break;
-            case 2: m_uiMyAbility = SPELL_PERIODIC_MANA_BURN; break;
-            case 3: m_uiMyAbility = SPELL_FIRE_ARCANE_REFLECT; break;
-            case 4: m_uiMyAbility = SPELL_SHADOW_FROST_REFLECT; break;
-            case 5: m_uiMyAbility = SPELL_THORNS; break;
-            case 6: m_uiMyAbility = SPELL_PERIODIC_THUNDERCLAP; break;
-            case 7: m_uiMyAbility = SPELL_MORTAL_STRIKE; break;
-            case 8: m_uiMyAbility = SPELL_PERIODIC_SHADOW_STORM; break;
+            case 0: m_uiMyTransfer = SPELL_MENDING; break;
+            case 1: m_uiMyTransfer = SPELL_PERIODIC_KNOCK_AWAY; break;
+            case 2: m_uiMyTransfer = SPELL_PERIODIC_MANA_BURN; break;
+            case 3: m_uiMyTransfer = SPELL_FIRE_ARCANE_REFLECT; break;
+            case 4: m_uiMyTransfer = SPELL_SHADOW_FROST_REFLECT; break;
+            case 5: m_uiMyTransfer = SPELL_THORNS; break;
+            case 6: m_uiMyTransfer = SPELL_PERIODIC_THUNDERCLAP; break;
+            case 7: m_uiMyTransfer = SPELL_MORTAL_STRIKE; break;
+            case 8: m_uiMyTransfer = SPELL_PERIODIC_SHADOW_STORM; break;
         }
-
-        DoCastSpellIfCan(m_creature, m_uiMyAbility, CAST_TRIGGERED);
     }
 
-    void DoTransferAbility()
+    void DoTransferAbility(bool bAtDeath)
     {
+        Unit* pSource = NULL;
+        Unit* pTarget = NULL;
+
         for(std::list<uint64>::iterator itr = m_lAssistList.begin(); itr != m_lAssistList.end(); ++itr)
         {
-            if (Unit* pBuddy = Unit::GetUnit(*m_creature, *itr))
+            Unit* pBuddy = Unit::GetUnit(*m_creature, *itr);
+
+            if (pTarget)
+                pTarget = pSource;
+            else
+                pTarget = m_creature;
+
+            pSource = pBuddy;
+
+            if (pSource && pTarget && pTarget->isAlive())
             {
-                if (*itr == m_creature->GetGUID())
-                    continue;
+                pSource->CastSpell(pTarget, bAtDeath ? m_uiMyAbility : m_uiMyTransfer, true);
 
-                if (!pBuddy->isAlive())
-                    continue;
-
-                pBuddy->SetHealth(pBuddy->GetMaxHealth());
-                DoCastSpellIfCan(pBuddy, m_uiMyAbility, CAST_TRIGGERED);
+                if (bAtDeath)
+                    pTarget->SetHealth(pTarget->GetMaxHealth());
+                else
+                    return;
             }
         }
     }
@@ -130,9 +137,6 @@ struct MANGOS_DLL_DECL npc_anubisath_sentinelAI : public ScriptedAI
         {
             for(std::list<uint64>::iterator itr = m_lAssistList.begin(); itr != m_lAssistList.end(); ++itr)
             {
-                if (*itr == m_creature->GetGUID())
-                    continue;
-
                 if (Creature* pBuddy = (Creature*)Unit::GetUnit(*m_creature, *itr))
                 {
                     if (pBuddy->isAlive())
@@ -144,7 +148,7 @@ struct MANGOS_DLL_DECL npc_anubisath_sentinelAI : public ScriptedAI
         }
 
         std::list<Creature*> lAssistList;
-        GetCreatureListWithEntryInGrid(lAssistList, m_creature, m_creature->GetEntry(), 80.0f);
+        GetCreatureListWithEntryInGrid(lAssistList, m_creature, m_creature->GetEntry(), 70.0f);
 
         if (lAssistList.empty())
             return;
@@ -152,32 +156,11 @@ struct MANGOS_DLL_DECL npc_anubisath_sentinelAI : public ScriptedAI
         for(std::list<Creature*>::iterator iter = lAssistList.begin(); iter != lAssistList.end(); ++iter)
         {
             m_lAssistList.push_back((*iter)->GetGUID());
-
-            if ((*iter)->GetGUID() == m_creature->GetGUID())
-                continue;
-
             (*iter)->AI()->AttackStart(pTarget);
         }
 
         if (m_lAssistList.size() != MAX_BUDDY)
             error_log("SD2: npc_anubisath_sentinel found too few/too many buddies, expected %u.", MAX_BUDDY);
-    }
-
-    void UpdateAI(const uint32 uiDiff)
-    {
-        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
-            return;
-
-        if (!m_bEnraged && m_creature->GetHealthPercent() < 30.0f)
-        {
-            if (DoCastSpellIfCan(m_creature, SPELL_ENRAGE) == CAST_OK)
-            {
-                DoScriptText(EMOTE_GENERIC_FRENZY, m_creature);
-                m_bEnraged = true;
-            }
-        }
-
-        DoMeleeAttackIfReady();
     }
 };
 

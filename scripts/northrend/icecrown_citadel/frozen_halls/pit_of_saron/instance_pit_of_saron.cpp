@@ -77,12 +77,13 @@ struct MANGOS_DLL_DECL instance_pit_of_saron : public ScriptedInstance
         }
     }
 
-    void OnObjectCreate(GameObject* pGo)
+    /*void OnObjectCreate(GameObject* pGo)
     {
         switch(pGo->GetEntry())
         {
         }
-    }
+    }*/
+
     void SetData(uint32 uiType, uint32 uiData)
     {
         switch(uiType)

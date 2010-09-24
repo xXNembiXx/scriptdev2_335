@@ -301,6 +301,9 @@
     <Filter Include="scripts\guards">
       <UniqueIdentifier>{0a713100-cd9e-4c40-b85f-0ca88ab87197}</UniqueIdentifier>
     </Filter>
+    <Filter Include="scripts\battlegrounds\alterac_valley">
+      <UniqueIdentifier>{4bcdd2be-042a-4def-8c60-cf091291261c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\base\escort_ai.cpp">
@@ -1830,6 +1833,18 @@
     </ClCompile>
     <ClCompile Include="..\scripts\guards\thrall.cpp">
       <Filter>scripts\guards</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scripts\battlegrounds\alterac_valley\boss_balinda.cpp">
+      <Filter>scripts\battlegrounds\alterac_valley</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scripts\battlegrounds\alterac_valley\boss_drekthar.cpp">
+      <Filter>scripts\battlegrounds\alterac_valley</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scripts\battlegrounds\alterac_valley\boss_galvangar.cpp">
+      <Filter>scripts\battlegrounds\alterac_valley</Filter>
+    </ClCompile>
+    <ClCompile Include="..\scripts\battlegrounds\alterac_valley\boss_vanndar.cpp">
+      <Filter>scripts\battlegrounds\alterac_valley</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

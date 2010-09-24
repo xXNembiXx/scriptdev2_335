@@ -666,7 +666,7 @@ bool QuestAccept_npc_totem_of_akida(Player* pPlayer, Creature* pCreature, const 
         if (npc_ancestor_akidaAI* pEscortAI = dynamic_cast<npc_ancestor_akidaAI*>(npcAkida->AI()))
 		{
 			npcAkida->CastSpell(npcAkida,SPELL_APPEAR_ANCESTOR,false);
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
 		}
 	}
     return true;
@@ -786,7 +786,7 @@ bool QuestAccept_npc_totem_of_coo(Player* pPlayer, Creature* pCreature, const Qu
 		if (npc_ancestor_cooAI* pEscortAI = dynamic_cast<npc_ancestor_cooAI*>(npcCoo->AI()))
 		{
 			npcCoo->CastSpell(npcCoo,SPELL_APPEAR_ANCESTOR,false);
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
 		}
 	}
     return true;
@@ -917,7 +917,7 @@ bool QuestAccept_npc_totem_of_yor(Player* pPlayer, Creature* pCreature, const Qu
 		{
 			npcYor->CastSpell(npcYor,SPELL_APPEAR_ANCESTOR,false);
 			DoScriptText(YOR_SAY_START, npcYor, pPlayer);
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
 		}
 	}
     return true;
@@ -1045,7 +1045,7 @@ bool QuestAccept_npc_totem_of_tikti(Player* pPlayer, Creature* pCreature, const 
         if (npc_ancestor_tiktiAI* pEscortAI = dynamic_cast<npc_ancestor_tiktiAI*>(npcTikti->AI()))
 		{
 			npcTikti->CastSpell(npcTikti,SPELL_APPEAR_ANCESTOR,false);
-            pEscortAI->Start(false, false, pPlayer->GetGUID(), pQuest);
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
 		}
 	}
     return true;

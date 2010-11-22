@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Eversong_Woods
 SD%Complete: 100
-SDComment: Quest support: 8483, 8488, 8490, 9686
+SDComment: Quest support: 8346, 8483, 8488, 8490, 9686
 SDCategory: Eversong Woods
 EndScriptData */
 
@@ -27,6 +27,7 @@ go_harbinger_second_trial
 npc_prospector_anvilward
 npc_apprentice_mirveda
 npc_infused_crystal
+npc_mana_wyrm
 EndContentData */
 
 #include "precompiled.h"
@@ -304,8 +305,8 @@ CreatureAI* GetAI_npc_prospector_anvilward(Creature* pCreature)
     return new npc_prospector_anvilwardAI(pCreature);
 }
 
-#define GOSSIP_ITEM_MOMENT "I need a moment of your time, sir."
-#define GOSSIP_ITEM_SHOW   "Why... yes, of course. I've something to show you right inside this building, Mr. Anvilward."
+#define GOSSIP_ITEM_MOMENT "Habt Ihr einen Moment Zeit für mich, mein Herr?"
+#define GOSSIP_ITEM_SHOW   "Warum... ja, natürlich. Ich möchte Euch etwas zeigen, hier, in diesem Gebäude dort, Meister Ambossel."
 
 bool GossipHello_npc_prospector_anvilward(Player* pPlayer, Creature* pCreature)
 {
@@ -535,6 +536,40 @@ CreatureAI* GetAI_npc_infused_crystal(Creature* pCreature)
     return new npc_infused_crystalAI (pCreature);
 }
 
+/*######
+## npc_mana_wyrm
+######*/
+
+#define ARCANE_TORRENT_MANA			28730
+#define ARCANE_TORRENT_ENERGY		25046
+#define ARCANE_TORRENT_RUNIC		50613
+
+struct MANGOS_DLL_DECL npc_mana_wyrmAI : public ScriptedAI
+{
+    npc_mana_wyrmAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+		Reset();
+    }
+
+    void Reset() {}
+
+    void SpellHit(Unit* pCaster, const SpellEntry* pSpell)
+    {
+        if ( pCaster->GetTypeId() == TYPEID_PLAYER && m_creature->isAlive() && ( (pSpell->Id == ARCANE_TORRENT_MANA) || (pSpell->Id == ARCANE_TORRENT_ENERGY) || (pSpell->Id == ARCANE_TORRENT_RUNIC) ) )
+        {
+            if(((Player*)pCaster)->GetQuestStatus(8346) == QUEST_STATUS_INCOMPLETE)
+            {
+                ((Player*)pCaster)->KilledMonsterCredit(15468);
+            }
+        }
+    }
+};
+
+CreatureAI* GetAI_npc_mana_wyrm(Creature* pCreature)
+{
+    return new npc_mana_wyrmAI(pCreature);
+}
+
 void AddSC_eversong_woods()
 {
     Script* pNewScript;
@@ -559,12 +594,17 @@ void AddSC_eversong_woods()
 
     pNewScript = new Script;
     pNewScript->Name = "npc_apprentice_mirveda";
-    pNewScript->GetAI = GetAI_npc_apprentice_mirvedaAI;
+    pNewScript->GetAI = &GetAI_npc_apprentice_mirvedaAI;
     pNewScript->pQuestAccept = &QuestAccept_unexpected_results;
     pNewScript->RegisterSelf();
 
     pNewScript = new Script;
     pNewScript->Name= "npc_infused_crystal";
     pNewScript->GetAI = &GetAI_npc_infused_crystal;
+    pNewScript->RegisterSelf();
+
+    pNewScript = new Script;
+    pNewScript->Name = "npc_mana_wyrm";
+    pNewScript->GetAI = &GetAI_npc_mana_wyrm;
     pNewScript->RegisterSelf();
 }

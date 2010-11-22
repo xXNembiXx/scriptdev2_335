@@ -23,7 +23,7 @@ EndScriptData */
 
 #include "precompiled.h"
 #include "pit_of_saron.h"
-enum
+enum 
 {
         //common
     SPELL_BERSERK                           = 47008,
@@ -55,6 +55,23 @@ enum
     ACHIEV_DOESNT_GO_TO_ELEVEN                  = 4524
 
 };
+
+/*
+enum saysSD2
+{
+    SAY_AGGRO                           = -1658014,
+    SAY_SLAY_1                          = -1658015,
+    SAY_BOULDER_HIT                     = -1658016,
+    SAY_DEATH                           = -1658017,
+    SAY_FORGE_1                         = -1658018,
+    SAY_FORGE_2                         = -1658019,
+    SAY_TYRANNUS_GARFROST               = -1658020,
+    SAY_GENERAL_GARFROST                = -1658021,
+
+    EMOTE_THROW_SARONITE                = -1658022,
+    EMOTE_DEEP_FREEZE                   = -1658023,
+};
+*/
 
 struct MANGOS_DLL_DECL boss_forgemaster_gafrostAI : public ScriptedAI
 {
@@ -129,7 +146,7 @@ struct MANGOS_DLL_DECL boss_forgemaster_gafrostAI : public ScriptedAI
             DoCast(m_creature, SPELL_THUNDERING_STOMP);	
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
             m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MovePoint(0, 654.021, -201.438, 526.699); 
+            m_creature->GetMotionMaster()->MovePoint(0, 654.021f, -201.438f, 526.699f); 
         }
 
         if (((m_creature->GetHealth()*100 / m_creature->GetMaxHealth()) < 33) && !m_bIsPhase3)
@@ -139,7 +156,7 @@ struct MANGOS_DLL_DECL boss_forgemaster_gafrostAI : public ScriptedAI
             DoCast(m_creature, SPELL_THUNDERING_STOMP);
             m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
             m_creature->GetMotionMaster()->Clear();
-            m_creature->GetMotionMaster()->MovePoint(0, 718.009, -229.447, 526.847);
+            m_creature->GetMotionMaster()->MovePoint(0, 718.009f, -229.447f, 526.847f);
         }
 
         if (m_bIsPhase2)

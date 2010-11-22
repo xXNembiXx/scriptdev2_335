@@ -44,7 +44,16 @@ npc_sayge               100%    Darkmoon event fortune teller, buff player based
 npc_tabard_vendor        50%    allow recovering quest related tabards, achievement related ones need core support
 npc_locksmith            75%    list of keys needs to be confirmed
 npc_death_knight_gargoyle       AI for summoned gargoyle of deathknights
+mob_risen_ghoul          90%    Death Knight's Risen Ghoul and Army of the Dead Ghoul. Emote handling needs further research
 npc_experience_eliminator 100%		NPC to stop gaining experience
+npc_winter_reveler		100%	Winterveil event
+npc_metzen				100%	Winterveil event
+npc_training_dummy		100%	AI for training dummies
+npc_dread_captain_demeza100%	Pirates' Day
+npc_wild_wolpertinger
+npc_flynn_firebrew
+npc_slurpo_fizzykeg
+npc_brewfest_delivery_bunny
 EndContentData */
 
 /*########
@@ -1075,8 +1084,8 @@ enum
     SPELL_TRICK_BAT                 = 24732
 };
 
-#define GOSSIP_ITEM_TRICK_OR_TREAT  "Trick or Treat!"
-#define GOSSIP_ITEM_WHAT_TO_DO      "What can I do at an Inn?"
+#define GOSSIP_ITEM_TRICK_OR_TREAT  "Süßes oder Saures!"
+#define GOSSIP_ITEM_WHAT_TO_DO      "Was kann ich in einem Gasthaus alles machen?"
 
 bool GossipHello_npc_innkeeper(Player* pPlayer, Creature* pCreature)
 {
@@ -1164,7 +1173,7 @@ enum
     QUEST_MAGICAL_KINGDOM_N = 12796
 };
 
-#define GOSSIP_ITEM_TELEPORT_TO "I am ready to be teleported to Dalaran."
+#define GOSSIP_ITEM_TELEPORT_TO "Ich bin bereit nach Dalaran teleportiert zu werden."
 
 bool GossipHello_npc_kingdom_of_dalaran_quests(Player* pPlayer, Creature* pCreature)
 {
@@ -1202,7 +1211,7 @@ enum
     TEXT_ID_PROGRESS        = 4715
 };
 
-#define GOSSIP_ITEM_GRANT   "You have thought well, spirit. I ask you to grant me the strength of your body and the strength of your heart."
+#define GOSSIP_ITEM_GRANT   "You have thought well, spirit. I ask you to grant me the strength of your body and the strength of your heart." //GMDB TODO
 
 bool GossipHello_npc_lunaclaw_spirit(Player* pPlayer, Creature* pCreature)
 {
@@ -1370,7 +1379,7 @@ bool GossipHello_npc_sayge(Player* pPlayer, Creature* pCreature)
         pPlayer->SEND_GOSSIP_MENU(7393, pCreature->GetGUID());
     else
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Yes", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich bin bereit zu erfahren, was das Schickal für mich bereithält!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         pPlayer->SEND_GOSSIP_MENU(7339, pCreature->GetGUID());
     }
 
@@ -1382,38 +1391,38 @@ void SendAction_npc_sayge(Player* pPlayer, Creature* pCreature, uint32 uiAction)
     switch(uiAction)
     {
         case GOSSIP_ACTION_INFO_DEF+1:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Slay the Man",                      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Turn him over to liege",            GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Confiscate the corn",               GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Let him go and have the corn",      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich töte den Mann auf der Stelle, wie mein Lehnsherr es von mir erwartet, denn der Kerl ist ein Dieb und ein Lügner zugleich.",                      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich bringe den Mann zu meinem Lehnsherrn für eine Bestrafung, da er das Gesetz gebrochen hat, und es meine beeidete Pflicht ist, das Gesetz zu wahren.",            GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich konfisziere das Getreide, das er stahl, warne ihn, das Stehlen der Weg zur Verdammnis und Zerstörung ist, aber lass ihn letztendlich zu seiner Familie zurückkehren.",               GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich erlaube dem Mann genug Getreide für seine Familie mitzunehmen, damit er sie für ein paar Tage ernähren kann und ermutige ihn das Land zu verlassen.",      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
             pPlayer->SEND_GOSSIP_MENU(7340, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Execute your friend painfully",     GOSSIP_SENDER_MAIN+1, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Execute your friend painlessly",    GOSSIP_SENDER_MAIN+2, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Let your friend go",                GOSSIP_SENDER_MAIN+3, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Entsprechend der Order meines Herrn, werde ich ihn hinrichten. Er wird bis zum letzten Atemzug endlose Schmerzen erleiden. So werde ich ihm die Taten an meinem Volk heimzahlen.",     GOSSIP_SENDER_MAIN+1, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Entsprechend der Order meines Herrn, werde ich ihn hinrichten, doch werde ich es auf eine möglich schmerzfreie Art tun. Zwar muss der Gerechtigkeit genüge getan werden, doch soll dies mein Mitleid nicht mindern.",    GOSSIP_SENDER_MAIN+2, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich riskiere mein Leben und befreie ihn, damit er seine Unschuld beweisen kann. Soweit ich es kann, unterstütze ich ihn auf jede erdenkliche Art und Weise.",                GOSSIP_SENDER_MAIN+3, GOSSIP_ACTION_INFO_DEF); 
             pPlayer->SEND_GOSSIP_MENU(7341, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Confront the diplomat",             GOSSIP_SENDER_MAIN+4, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Show not so quiet defiance",        GOSSIP_SENDER_MAIN+5, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Remain quiet",                      GOSSIP_SENDER_MAIN+2, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich konfrontiere den Herrscher mit seinem unangebrachten Verhalten und bewahre so die Ehre meines Lehensherrn, mit der Gefahr zukünftig diplomatische Verhandlungen unmöglich zu machen.",             GOSSIP_SENDER_MAIN+4, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich nehme die Beleidigung hin und versuche dem Herrscher unterschwellig klar zu mach, dass er sich einen unentschuldbaren diplomatischen Ausrutscher geleistet hat.Anschließend werde ich bei meiner Rückkehr, meinen Lehensherrn über dieses Vorkommnis unterrichten.",        GOSSIP_SENDER_MAIN+5, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich nehme die Beleidigung stillschweigend hin und werde meinen Lehenherrn nichts davon berichten, schließlich soll ich um jeden preis Frieden schaffen. Es ist immerhin nur eine Beleidigung und keine Kriegserklärung.",                      GOSSIP_SENDER_MAIN+2, GOSSIP_ACTION_INFO_DEF);
             pPlayer->SEND_GOSSIP_MENU(7361, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+4:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Speak against your brother openly", GOSSIP_SENDER_MAIN+6, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Help your brother in",              GOSSIP_SENDER_MAIN+7, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Keep your brother out without letting him know", GOSSIP_SENDER_MAIN+8, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich würde mich gegen die Aufnahme meines Bruders in den Orden aussprechen und einen permanenten Bruch unserer Beziehung zu einander riskieren. Er wäre eine zu große Gefahr für sich selbst und andere in seinem Umfeld und es wäre ein viel zu großes Risiko darauf zu hoffen, dass er in seine Rolle hineinwachen würde.", GOSSIP_SENDER_MAIN+6, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich würde mich für die Aufnahme meines Bruders in den Orden aussprechen und die Gefahr auf mich nehmen, dass die Sicherheit des Ordens gefährdet wäre. Ich vertraue seiner Fähigkeit sich anzupassen und sein Wissen zu erweitern und könnte ihm helfen in seine Rolle hineinzuwachsen.",              GOSSIP_SENDER_MAIN+7, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich würde heimlich Gerüchte streuen, die gegen die Aufnahme meines Bruders in den Orden sprechen. So verhindere ich seine Mitgleidschaft und rette unsere Familienbande.", GOSSIP_SENDER_MAIN+8, GOSSIP_ACTION_INFO_DEF);
             pPlayer->SEND_GOSSIP_MENU(7362, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Take credit, keep gold",            GOSSIP_SENDER_MAIN+5, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Take credit, share the gold",       GOSSIP_SENDER_MAIN+4, GOSSIP_ACTION_INFO_DEF);
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Let the knight take credit",        GOSSIP_SENDER_MAIN+3, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich würde meinem Lehensherrn das Ohr des Monsters bringen, um dessen Tod für mich zu beanspruchen und die Belohnung an mich nehmen. Es ist falsch eine Tat für sich zu beanspruchen, die in Wirklichkeit ein Anderer vollbracht hat.",            GOSSIP_SENDER_MAIN+5, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich würde meinem Lehensherrn das Ohr des Monsters bringen, um dessen Tod für mich zu beanspruchen - immerhin wurde es durch meine Hand getötet. Anschließend würde ich dem Ritter einen Teil der Belohnung abgeben, damit er der mittellosen Familie helfen kann.",       GOSSIP_SENDER_MAIN+4, GOSSIP_ACTION_INFO_DEF);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich erzähle niemanden von meiner heldenhaften Tat und erlaube dem Ritter die Belohnung für sich zu beanspruchen, damit er der mittellosen Familie helfen kann.",        GOSSIP_SENDER_MAIN+3, GOSSIP_ACTION_INFO_DEF);
             pPlayer->SEND_GOSSIP_MENU(7363, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Thanks",                            GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich habe ausreichend Platz in meinem Gepäck und würde gerne eines dieser Horoskope haben, von denen Ihr mir erzählt habt!",                            GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+6);
             pPlayer->SEND_GOSSIP_MENU(7364, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+6:
@@ -1515,16 +1524,16 @@ enum
     SPELL_TABARD_OF_SUMMER_FLAMES              = 62769
 };
 
-#define GOSSIP_LOST_TABARD_OF_BLOOD_KNIGHT               "I've lost my Tabard of Blood Knight."
-#define GOSSIP_LOST_TABARD_OF_THE_HAND                   "I've lost my Tabard of the Hand."
-#define GOSSIP_LOST_TABARD_OF_THE_PROTECTOR              "I've lost my Tabard of the Protector."
-#define GOSSIP_LOST_GREEN_TROPHY_TABARD_OF_THE_ILLIDARI  "I've lost my Green Trophy Tabard of the Illidari."
-#define GOSSIP_LOST_PURPLE_TROPHY_TABARD_OF_THE_ILLIDARI "I've lost my Purple Trophy Tabard of the Illidari."
-#define GOSSIP_LOST_TABARD_OF_SUMMER_SKIES               "I've lost my Tabard of Summer Skies."
-#define GOSSIP_LOST_TABARD_OF_SUMMER_FLAMES              "I've lost my Tabard of Summer Flames."
-#define GOSSIP_LOST_LOREMASTERS_COLORS                   "I've lost my Loremaster's Colors."
-#define GOSSIP_LOST_TABARD_OF_THE_EXPLORER               "I've lost my Tabard of the Explorer."
-#define GOSSIP_LOST_TABARD_OF_THE_ACHIEVER               "I've lost my Tabard of the Achiever."
+#define GOSSIP_LOST_TABARD_OF_BLOOD_KNIGHT               "Ich habe meinen Wappenrock der Blutritter verloren."
+#define GOSSIP_LOST_TABARD_OF_THE_HAND                   "Ich habe meinen Wappenrock der Hand verloren."
+#define GOSSIP_LOST_TABARD_OF_THE_PROTECTOR              "Ich habe meinen Wappenrock des Beschützers verloren."
+#define GOSSIP_LOST_GREEN_TROPHY_TABARD_OF_THE_ILLIDARI  "Ich habe meinen grünen Trophäenwappenrock der Illidari verloren."
+#define GOSSIP_LOST_PURPLE_TROPHY_TABARD_OF_THE_ILLIDARI "Ich habe meinen lila Trophäenwappenrock der Illidari verloren."
+#define GOSSIP_LOST_TABARD_OF_SUMMER_SKIES               "Ich habe meinen sommerlichen Himmelswappenrock verloren."
+#define GOSSIP_LOST_TABARD_OF_SUMMER_FLAMES              "Ich habe meinen sommerlichen Flammenwappenrock verloren."
+#define GOSSIP_LOST_LOREMASTERS_COLORS                   "Ich habe meinen Wappenrock des Meisters der Lehren verloren."
+#define GOSSIP_LOST_TABARD_OF_THE_EXPLORER               "Ich habe meinen Wappenrock des Forschers verloren."
+#define GOSSIP_LOST_TABARD_OF_THE_ACHIEVER               "Ich habe meinen Wappenrock des Erfolgreichen verloren."
 
 bool GossipHello_npc_tabard_vendor(Player* pPlayer, Creature* pCreature)
 {
@@ -1663,12 +1672,12 @@ enum
     SPELL_VIOLET_HOLD_KEY                 = 67253
 };
 
-#define GOSSIP_LOST_ARCATRAZ_KEY         "I've lost my key to the Arcatraz."
-#define GOSSIP_LOST_SHADOWFORGE_KEY      "I've lost my key to the Blackrock Depths."
-#define GOSSIP_LOST_SKELETON_KEY         "I've lost my key to the Scholomance."
-#define GOSSIP_LOST_SHATTERED_HALLS_KEY  "I've lost my key to the Shattered Halls."
-#define GOSSIP_LOST_THE_MASTERS_KEY      "I've lost my key to the Karazhan."
-#define GOSSIP_LOST_VIOLET_HOLD_KEY      "I've lost my key to the Violet Hold."
+#define GOSSIP_LOST_ARCATRAZ_KEY         "Ich habe meinen Schlüssel zur Arkatraz verloren."
+#define GOSSIP_LOST_SHADOWFORGE_KEY      "Ich habe meinen Schlüssel für die Schattenschmiede verloren."
+#define GOSSIP_LOST_SKELETON_KEY         "Ich habe meinen Schlüssel für Scholomance verloren"
+#define GOSSIP_LOST_SHATTERED_HALLS_KEY  "Ich habe meinen Schlüssel für die zerschmetterten Hallen verloren."
+#define GOSSIP_LOST_THE_MASTERS_KEY      "Ich habe meinen Schlüssel für Karazan verloren"
+#define GOSSIP_LOST_VIOLET_HOLD_KEY      "Ich habe meinen Schlüssel zur Violetten Festung verloren."
 
 
 bool GossipHello_npc_locksmith(Player* pPlayer, Creature* pCreature)
@@ -2170,6 +2179,185 @@ CreatureAI* GetAI_npc_death_knight_gargoyle(Creature* pCreature)
 }
 
 /*######
+## Risen Ghoul, Army of the Dead Ghoul
+######*/
+
+enum
+{
+    ENTRY_AOTD_GHOUL    = 24207,
+    SPELL_CLAW          = 47468,
+    SPELL_LEAP          = 47482,
+    SPELL_AURA_TAUNT    = 43264
+};
+
+struct MANGOS_DLL_DECL mob_risen_ghoulAI : public ScriptedAI
+{
+    mob_risen_ghoulAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        m_bIsReady = false;
+        m_bIsSpawned = false;
+        fDist = (m_creature->GetEntry() == ENTRY_AOTD_GHOUL) ? float(urand(1, 5) ) : PET_FOLLOW_DIST;
+        fAngle = PET_FOLLOW_ANGLE;
+        m_uiCreatorGUID = m_creature->GetCreatorGuid();
+        if (Unit* pOwner = m_creature->GetMap()->GetUnit(m_uiCreatorGUID) )
+            fAngle = m_creature->GetAngle(pOwner);
+
+        Reset();
+    }
+
+    Unit* pTarget;
+
+    ObjectGuid m_uiCreatorGUID;
+    uint64 m_uiTargetGUID;
+
+    uint32 m_uiReadyTimer;
+    uint32 m_uiClawTimer;
+    uint32 m_uiLeapTimer;
+
+    bool m_bIsReady;
+    bool m_bIsSpawned;
+
+    float fDist;
+    float fAngle;
+
+
+    void Reset()
+    {
+        pTarget         = NULL;
+        m_uiTargetGUID  = 0;
+        m_uiReadyTimer  = 4000;
+        m_uiClawTimer   = urand(3000, 5000);
+        m_uiLeapTimer   = urand(1000, 5000);
+    }
+
+    void MoveInLineOfSight(Unit *pWho)
+    {
+        if (!m_bIsReady)
+            return;
+
+    ScriptedAI::MoveInLineOfSight(pWho);
+    }
+
+    void AttackStart(Unit *pWho)
+    {
+        if (!m_bIsReady)
+            return;
+
+        ScriptedAI::AttackStart(pWho);
+    }
+/*  this needs further research
+    void ReceiveEmote(Player* pPlayer, uint32 emote)
+    {
+        if (m_creature->GetEntry() == ENTRY_AOTD_GHOUL)
+            return;
+
+        switch(emote)
+        {
+            case TEXTEMOTE_GLARE:
+                m_creature->HandleEmote(EMOTE_ONESHOT_COWER);
+                break;
+            case TEXTEMOTE_COWER:
+                m_creature->HandleEmote(EMOTE_ONESHOT_OMNICAST_GHOUL);
+                break;
+        }
+    }
+*/
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_bIsReady)
+        {
+            if (!m_bIsSpawned)
+            {
+                m_creature->HandleEmoteCommand(EMOTE_ONESHOT_EMERGE);
+                m_bIsSpawned = true;
+            }
+
+            if (m_uiReadyTimer <= uiDiff)
+            {
+                m_bIsReady = true;
+                if (m_creature->GetEntry() == ENTRY_AOTD_GHOUL)
+                    DoCastSpellIfCan(m_creature, SPELL_AURA_TAUNT, CAST_TRIGGERED);
+            }
+            else m_uiReadyTimer -= uiDiff;
+
+            return;
+        }
+
+        Unit* pOwner = m_creature->GetMap()->GetUnit(m_uiCreatorGUID);
+        if (!pOwner || !pOwner->IsInWorld())
+        {
+            m_creature->DealDamage(m_creature, m_creature->GetMaxHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NONE, NULL, false);
+            return;
+        }
+
+        // check if current target still exists and is atatckable
+        if (m_creature->getVictim() )
+            m_uiTargetGUID = m_creature->getVictim()->GetGUID();
+
+        pTarget = m_creature->GetMap()->GetUnit(m_uiTargetGUID);
+
+        if (!pTarget || !m_creature->CanInitiateAttack() || !pTarget->isTargetableForAttack() ||
+        !m_creature->IsHostileTo(pTarget) || !pTarget->isInAccessablePlaceFor(m_creature))
+        {
+            // we have no target, so look for the new one
+            if (Unit *pTmp = m_creature->SelectRandomUnfriendlyTarget(0, 30.0f) )
+                m_uiTargetGUID = pTmp->GetGUID();
+
+            pTarget = m_creature->GetMap()->GetUnit(m_uiTargetGUID);
+
+            // now check again. if no target found then there is nothing to attack - start following the owner
+            if (!pTarget || !m_creature->CanInitiateAttack() || !pTarget->isTargetableForAttack() ||
+            !m_creature->IsHostileTo(pTarget) || !pTarget->isInAccessablePlaceFor(m_creature))
+            {
+                if (m_creature->GetMotionMaster()->GetCurrentMovementGeneratorType() != FOLLOW_MOTION_TYPE)
+                {
+                    m_creature->InterruptNonMeleeSpells(false);
+                    m_creature->GetMotionMaster()->Clear();
+                    m_creature->GetMotionMaster()->MoveFollow(pOwner, fDist, fAngle);
+                    Reset();
+                }
+                return;
+            }
+            if (pTarget)
+                m_creature->AI()->AttackStart(pTarget);
+        }
+
+        // Claw
+        if (m_uiClawTimer <= uiDiff)
+        {
+            DoCastSpellIfCan(pTarget, SPELL_CLAW);
+            m_uiClawTimer = urand(3000, 5000);
+        }
+        else m_uiClawTimer -= uiDiff;
+
+        // Leap
+        if (m_uiLeapTimer <= uiDiff)
+        {
+            if (Unit *pLeapTarget = m_creature->SelectRandomUnfriendlyTarget(m_creature->getVictim(), 30.0f) )
+            {
+                if (pLeapTarget != pTarget)
+                {
+                    DoCastSpellIfCan(pLeapTarget, SPELL_LEAP, CAST_TRIGGERED);
+                    m_uiLeapTimer = 20000;
+                    m_uiTargetGUID = pLeapTarget->GetGUID();
+                    m_creature->AI()->AttackStart(pLeapTarget);
+                    return;
+                }
+            }
+        }
+        else m_uiLeapTimer -= uiDiff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+ 
+CreatureAI* GetAI_mob_risen_ghoul(Creature* pCreature)
+{
+    return new mob_risen_ghoulAI (pCreature);
+};
+
+
+/*######
 ## npc_experience_eliminator
 ######*/
 
@@ -2207,6 +2395,534 @@ bool GossipSelect_npc_experience_eliminator(Player* pPlayer, Creature* pCreature
     return true;
 }
 
+/*######
+## npc_winter_reveler
+######*/
+
+#define AURA_MISTLETOE			26004
+#define ITEM_SNOWFLAKES			34191
+#define ITEM_MISTLETOE			21519
+// display id's
+#define DISPLAY_DWARF_M			15746
+#define DISPLAY_DWARF_W			15747
+#define DISPLAY_HUMAN_M			15744
+#define DISPLAY_HUMAN_W			15745
+#define DISPLAY_ORC_M			15756
+#define DISPLAY_ORC_W			15751
+#define DISPLAY_TAUREN_M		15759
+#define DISPLAY_TAUREN_W		15754
+
+struct MANGOS_DLL_DECL npc_winter_revelerAI : public ScriptedAI
+{
+	npc_winter_revelerAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+	void ReceiveEmote(Player* pPlayer, uint32 uiEmote)
+    {
+		if (uiEmote == TEXTEMOTE_KISS)
+		{
+			// dwarf
+			if ( (pPlayer->GetTeam() == ALLIANCE) && (pPlayer->getGender() == 1) && (m_creature->GetDisplayId() == DISPLAY_DWARF_M) )
+			{
+
+				if (!pPlayer->HasAura(AURA_MISTLETOE))
+				{
+
+					if (rand()%2 == 0)
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_SNOWFLAKES, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_SNOWFLAKES, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					else
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_MISTLETOE, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_MISTLETOE, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					m_creature->CastSpell(pPlayer, AURA_MISTLETOE, false);
+				}
+			}
+
+			else if ( (pPlayer->GetTeam() == ALLIANCE) && (pPlayer->getGender() == 0) && (m_creature->GetDisplayId() == DISPLAY_DWARF_W) )		
+			{
+					if (rand()%2 == 0)
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_SNOWFLAKES, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_SNOWFLAKES, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					else
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_MISTLETOE, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_MISTLETOE, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					m_creature->CastSpell(pPlayer, AURA_MISTLETOE, false);
+			}
+			
+			// human
+			if ( (pPlayer->GetTeam() == ALLIANCE) && (pPlayer->getGender() == 1) && (m_creature->GetDisplayId() == DISPLAY_HUMAN_M) )
+			{
+
+				if (!pPlayer->HasAura(AURA_MISTLETOE))
+				{
+
+					if (rand()%2 == 0)
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_SNOWFLAKES, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_SNOWFLAKES, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					else
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_MISTLETOE, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_MISTLETOE, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					m_creature->CastSpell(pPlayer, AURA_MISTLETOE, false);
+				}
+			}
+
+			else if ( (pPlayer->GetTeam() == ALLIANCE) && (pPlayer->getGender() == 0) && (m_creature->GetDisplayId() == DISPLAY_HUMAN_W) )		
+			{
+					if (rand()%2 == 0)
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_SNOWFLAKES, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_SNOWFLAKES, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					else
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_MISTLETOE, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_MISTLETOE, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					m_creature->CastSpell(pPlayer, AURA_MISTLETOE, false);
+			}
+
+			// orc
+			if ( (pPlayer->GetTeam() == HORDE) && (pPlayer->getGender() == 1) && (m_creature->GetDisplayId() == DISPLAY_ORC_M) )
+			{
+
+				if (!pPlayer->HasAura(AURA_MISTLETOE))
+				{
+
+					if (rand()%2 == 0)
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_SNOWFLAKES, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_SNOWFLAKES, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					else
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_MISTLETOE, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_MISTLETOE, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					m_creature->CastSpell(pPlayer, AURA_MISTLETOE, false);
+				}
+			}
+
+			else if ( (pPlayer->GetTeam() == HORDE) && (pPlayer->getGender() == 0) && (m_creature->GetDisplayId() == DISPLAY_ORC_W) )		
+			{
+					if (rand()%2 == 0)
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_SNOWFLAKES, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_SNOWFLAKES, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					else
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_MISTLETOE, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_MISTLETOE, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					m_creature->CastSpell(pPlayer, AURA_MISTLETOE, false);
+			}
+
+			// tauren
+			if ( (pPlayer->GetTeam() == HORDE) && (pPlayer->getGender() == 1) && (m_creature->GetDisplayId() == DISPLAY_TAUREN_M) )
+			{
+
+				if (!pPlayer->HasAura(AURA_MISTLETOE))
+				{
+
+					if (rand()%2 == 0)
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_SNOWFLAKES, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_SNOWFLAKES, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					else
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_MISTLETOE, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_MISTLETOE, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					m_creature->CastSpell(pPlayer, AURA_MISTLETOE, false);
+				}
+			}
+
+			else if ( (pPlayer->GetTeam() == HORDE) && (pPlayer->getGender() == 0) && (m_creature->GetDisplayId() == DISPLAY_TAUREN_W) )		
+			{
+					if (rand()%2 == 0)
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_SNOWFLAKES, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_SNOWFLAKES, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					else
+					{
+						ItemPosCountVec dest;
+						uint8 msg = pPlayer->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_MISTLETOE, 1, false);
+							if (msg == EQUIP_ERR_OK)
+							{
+							     pPlayer->StoreNewItem(dest, ITEM_MISTLETOE, true);
+							}
+							else
+							pPlayer->SendEquipError(msg,NULL,NULL);
+					}
+					m_creature->CastSpell(pPlayer, AURA_MISTLETOE, false);
+			}
+		}
+	}
+
+
+	void Reset()
+    {
+       
+    }
+};
+
+CreatureAI* GetAI_npc_winter_reveler(Creature* pCreature)
+{
+    return new npc_winter_revelerAI(pCreature);
+}
+
+/*######
+## npc_metzen
+######*/
+
+#define GOSSIP_TEXT_METZEN				"Berieselt Metzten mit etwas Rentierstaub"
+#define QUEST_METZEN_ALLIANCE			8762
+#define QUEST_METZEN_HORDE				8746
+#define METZEN_KILL_CREDIT				15665
+#define SPELL_REINDEER_DUST				25952
+
+bool GossipHello_npc_metzen(Player* pPlayer, Creature* pCreature)
+{
+	pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_TEXT_METZEN, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    pPlayer->SEND_GOSSIP_MENU(8076, pCreature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_metzen(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+	if(uiSender != GOSSIP_SENDER_MAIN) return true;
+
+	if(uiAction == GOSSIP_ACTION_INFO_DEF)
+	{
+		if( (pPlayer->GetQuestStatus(QUEST_METZEN_ALLIANCE) == QUEST_STATUS_INCOMPLETE) || (pPlayer->GetQuestStatus(QUEST_METZEN_HORDE) == QUEST_STATUS_INCOMPLETE) )
+		{
+			pPlayer->KilledMonsterCredit(METZEN_KILL_CREDIT);
+			pCreature->CastSpell(pCreature, SPELL_REINDEER_DUST, true);
+		}		
+	}
+
+    return true;
+}
+
+/*######
+## npc_training_dummy
+######*/
+
+#define OUT_OF_COMBAT_TIME 5000
+
+struct MANGOS_DLL_DECL npc_training_dummyAI : public Scripted_NoMovementAI
+{
+    uint32 combat_timer;
+
+    npc_training_dummyAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    {
+        Reset();
+    }
+
+    void Reset()
+    {
+        combat_timer = 0;
+		m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+    }
+
+    void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+    {
+        combat_timer = 0;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        m_creature->ModifyHealth(m_creature->GetMaxHealth());
+
+        combat_timer += diff;
+        if (combat_timer > OUT_OF_COMBAT_TIME)
+            EnterEvadeMode();
+    }
+};
+
+CreatureAI* GetAI_npc_training_dummy(Creature* pCreature)
+{
+    return new npc_training_dummyAI(pCreature);
+}
+
+/*######
+## npc_dread_captain_demeza
+######*/
+enum 
+{
+    SPELL_DREAD_CORSAIR	= 50517,
+    ACHIEVEMENT_THE_CAPTAINS_BOOTY	= 3457
+};
+#define GOSSIP_TEXT_DEMEZA	"Ich möchte eurer Crew beitreten"
+
+bool GossipHello_npc_dread_captain_demeza(Player* pPlayer, Creature* pCreature)
+{
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_TEXT_DEMEZA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+    pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+    return true;
+}
+
+bool GossipSelect_npc_dread_captain_demeza(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+    if(uiAction == GOSSIP_ACTION_INFO_DEF+1)
+    {
+        pPlayer->CastSpell(pPlayer,SPELL_DREAD_CORSAIR, false);
+        AchievementEntry const *AchievDeMeza = GetAchievementStore()->LookupEntry(ACHIEVEMENT_THE_CAPTAINS_BOOTY);
+        if (AchievDeMeza)
+            pPlayer->CompletedAchievement(AchievDeMeza);
+    }
+    pPlayer->CLOSE_GOSSIP_MENU();
+    return true;
+}
+
+/*######
+## npc_wild_wolpertinger
+######*/
+enum 
+{
+	SPELL_CREATE_STUNNED_WOLPERTINGER_ITEM	= 41622,
+	SPELL_WOLPERTINGER_NET	= 41621,
+	QUEST_CATCH_THE_WILD_WOLPERTINGER_A = 11117,
+	QUEST_CATCH_THE_WILD_WOLPERTINGER_H = 11431
+};
+struct MANGOS_DLL_DECL npc_wild_wolpertingerAI : public ScriptedAI
+{
+	npc_wild_wolpertingerAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+	
+	void Reset()
+    {
+
+	}
+
+	void SpellHit(Unit *caster, const SpellEntry *spell)
+	{
+        if (caster->GetTypeId() == TYPEID_PLAYER && m_creature->isAlive() && spell->Id == SPELL_WOLPERTINGER_NET)
+        {
+            if ((((Player*)caster)->GetQuestStatus(QUEST_CATCH_THE_WILD_WOLPERTINGER_A) == QUEST_STATUS_INCOMPLETE) || (((Player*)caster)->GetQuestStatus(QUEST_CATCH_THE_WILD_WOLPERTINGER_H) == QUEST_STATUS_INCOMPLETE))
+            {
+				((Player*)caster)->CastSpell(caster, SPELL_CREATE_STUNNED_WOLPERTINGER_ITEM, false);
+			}
+			m_creature->ForcedDespawn();
+		}
+	}
+};
+CreatureAI* GetAI_npc_wild_wolpertinger(Creature* pCreature)
+{
+    return new npc_wild_wolpertingerAI(pCreature);
+}
+
+/*######
+## npc_flynn_firebrew
+######*/
+enum 
+{
+	QUEST_THERE_AND_BACK_AGAIN_A	= 11122,
+	QUEST_THERE_AND_BACK_AGAIN_H	= 11412,
+	ITEM_PORTABLE_BREWFEST_KEG	= 33797,
+	SPELL_BREWFEST_THROW_KEG	= 43660,
+	SPELL_BREWFEST_CREATE_PROTABLE_BREWFEST_KEG	= 42414,
+	SPELL_BREWFEST_THROW_KEG_PLAYER	= 43662
+};
+
+struct MANGOS_DLL_DECL npc_flynn_firebrewAI : public ScriptedAI
+{
+	npc_flynn_firebrewAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+	
+	void Reset()
+    {
+
+	};
+
+	void MoveInLineOfSight(Unit* pUnit)
+	{
+		 if ( pUnit && pUnit->GetTypeId() != TYPEID_PLAYER )
+			return;
+
+		if (((Player*)pUnit)->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_A) == QUEST_STATUS_INCOMPLETE)
+		{
+			if (((Player*)pUnit)->HasItemCount(ITEM_PORTABLE_BREWFEST_KEG, 1) == false)
+			{
+				m_creature->CastSpell(pUnit,SPELL_BREWFEST_THROW_KEG,false);
+				((Player*)pUnit)->CastSpell(pUnit,SPELL_BREWFEST_CREATE_PROTABLE_BREWFEST_KEG,false);
+			};
+		};
+	};
+};
+CreatureAI* GetAI_npc_flynn_firebrew(Creature* pCreature)
+{
+    return new npc_flynn_firebrewAI(pCreature);
+}
+
+/*######
+## npc_slurpo_fizzykeg
+######*/
+struct MANGOS_DLL_DECL npc_slurpo_fizzykegAI : public ScriptedAI
+{
+	npc_slurpo_fizzykegAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+	
+	void Reset()
+    {
+
+	};
+
+	void MoveInLineOfSight(Unit* pUnit)
+	{
+		 if ( pUnit && pUnit->GetTypeId() != TYPEID_PLAYER )
+			return;
+
+		if (((Player*)pUnit)->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_H) == QUEST_STATUS_INCOMPLETE)
+		{
+			if (((Player*)pUnit)->HasItemCount(ITEM_PORTABLE_BREWFEST_KEG, 1) == false)
+			{
+				m_creature->CastSpell(pUnit,SPELL_BREWFEST_THROW_KEG,false);
+				((Player*)pUnit)->CastSpell(pUnit,SPELL_BREWFEST_CREATE_PROTABLE_BREWFEST_KEG,false);
+			};
+		};
+	};
+};
+CreatureAI* GetAI_npc_slurpo_fizzykeg(Creature* pCreature)
+{
+    return new npc_slurpo_fizzykegAI(pCreature);
+}
+
+/*######
+## npc_brewfest_delivery_bunny
+######*/
+struct MANGOS_DLL_DECL npc_brewfest_delivery_bunnyAI : public ScriptedAI
+{
+	npc_brewfest_delivery_bunnyAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+	
+	void Reset()
+    {
+
+	};
+
+	void MoveInLineOfSight(Unit* pUnit)
+	{
+		 if ( pUnit && pUnit->GetTypeId() != TYPEID_PLAYER )
+			return;
+
+		if ((((Player*)pUnit)->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_A) == QUEST_STATUS_INCOMPLETE) || (((Player*)pUnit)->GetQuestStatus(QUEST_THERE_AND_BACK_AGAIN_H) == QUEST_STATUS_INCOMPLETE))
+		{
+			if (((Player*)pUnit)->HasItemCount(ITEM_PORTABLE_BREWFEST_KEG, 1))
+			{
+				((Player*)pUnit)->CastSpell(m_creature,SPELL_BREWFEST_THROW_KEG_PLAYER,false);
+				((Player*)pUnit)->KilledMonsterCredit(24337);
+				((Player*)pUnit)->DestroyItemCount(ITEM_PORTABLE_BREWFEST_KEG,1,true);
+			};
+		};
+	};
+};
+CreatureAI* GetAI_npc_brewfest_delivery_bunny(Creature* pCreature)
+{
+    return new npc_brewfest_delivery_bunnyAI(pCreature);
+}
 
 void AddSC_npcs_special()
 {
@@ -2317,10 +3033,57 @@ void AddSC_npcs_special()
     newscript->Name = "npc_death_knight_gargoyle";
     newscript->GetAI = &GetAI_npc_death_knight_gargoyle;
     newscript->RegisterSelf();
+
+	newscript = new Script;
+	newscript->Name = "mob_risen_ghoul";
+	newscript->GetAI = &GetAI_mob_risen_ghoul;
+	newscript->RegisterSelf();
 	
     newscript = new Script;
     newscript->Name = "npc_experience_eliminator";
     newscript->pGossipHello = &GossipHello_npc_experience_eliminator;
     newscript->pGossipSelect = &GossipSelect_npc_experience_eliminator;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_winter_reveler";
+    newscript->GetAI = &GetAI_npc_winter_reveler;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_metzen";
+    newscript->pGossipHello = &GossipHello_npc_metzen;
+	newscript->pGossipSelect = &GossipSelect_npc_metzen;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_training_dummy";
+    newscript->GetAI = &GetAI_npc_training_dummy;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_dread_captain_demeza";
+    newscript->pGossipHello =  &GossipHello_npc_dread_captain_demeza;
+    newscript->pGossipSelect = &GossipSelect_npc_dread_captain_demeza;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "npc_wild_wolpertinger";
+    newscript->GetAI = &GetAI_npc_wild_wolpertinger;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "npc_flynn_firebrew";
+    newscript->GetAI = &GetAI_npc_flynn_firebrew;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "npc_slurpo_fizzykeg";
+    newscript->GetAI = &GetAI_npc_slurpo_fizzykeg;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "npc_brewfest_delivery_bunny";
+    newscript->GetAI = &GetAI_npc_brewfest_delivery_bunny;
     newscript->RegisterSelf();
 }

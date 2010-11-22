@@ -17,6 +17,17 @@ extern void AddSC_example_escort();
 extern void AddSC_example_gossip_codebox();
 extern void AddSC_example_misc();
 
+//guards
+extern void AddSC_ancient_of_war();
+extern void AddSC_archbishop_benedictus();
+extern void AddSC_g_marcus_jonathan();
+extern void AddSC_high_fire_mage();
+extern void AddSC_high_sorcerer_andromath();
+extern void AddSC_highlord_bolvar_fordragon();
+extern void AddSC_city_officer();
+extern void AddSC_overlord_saurfang();
+extern void AddSC_thrall();
+
 //world
 extern void AddSC_areatrigger_scripts();
 extern void AddSC_boss_emeriss();
@@ -206,7 +217,10 @@ extern void AddSC_boss_temporus();
 extern void AddSC_dark_portal();
 extern void AddSC_instance_dark_portal();
 extern void AddSC_hyjal();                                  //COT, hyjal
+extern void AddSC_boss_anetheron();
 extern void AddSC_boss_archimonde();
+extern void AddSC_boss_azgalor();
+extern void AddSC_boss_kazrogal();
 extern void AddSC_instance_mount_hyjal();
 extern void AddSC_boss_captain_skarloc();                   //COT, old_hillsbrad
 extern void AddSC_boss_epoch_hunter();
@@ -237,6 +251,8 @@ extern void AddSC_mob_anubisath_sentinel();
 extern void AddSC_instance_temple_of_ahnqiraj();
 extern void AddSC_instance_wailing_caverns();               // Wailing Caverns
 extern void AddSC_zulfarrak();                              //zulfarrak
+extern void AddSC_instance_zulfarrak();
+
 // culling of stratholme
 extern void AddSC_boss_lord_epoch();
 extern void AddSC_boss_malganis();
@@ -255,6 +271,7 @@ extern void AddSC_bloodmyst_isle();
 extern void AddSC_boss_azuregos();
 extern void AddSC_darkshore();
 extern void AddSC_desolace();
+extern void AddSC_durotar();
 extern void AddSC_dustwallow_marsh();
 extern void AddSC_felwood();
 extern void AddSC_feralas();
@@ -336,6 +353,8 @@ extern void AddSC_boss_anomalus();                          //nexus
 extern void AddSC_boss_keristrasza();
 extern void AddSC_boss_ormorok();
 extern void AddSC_boss_telestra();
+extern void AddSC_boss_commander_kolurg();
+extern void AddSC_boss_commander_stoutbeard();
 extern void AddSC_instance_nexus();
 
 extern void AddSC_oculus();                                 //Oculus
@@ -499,6 +518,7 @@ extern void AddSC_boss_warp_splinter();
 extern void AddSC_boss_kaelthas();                          //TK, the_eye
 extern void AddSC_boss_void_reaver();
 extern void AddSC_boss_high_astromancer_solarian();
+extern void AddSC_boss_alar();
 extern void AddSC_instance_the_eye();
 extern void AddSC_the_eye();
 extern void AddSC_boss_gatewatcher_iron_hand();             //TK, the_mechanar
@@ -531,6 +551,17 @@ void AddScripts()
     AddSC_example_escort();
     AddSC_example_gossip_codebox();
     AddSC_example_misc();
+
+	//guards
+	AddSC_ancient_of_war();
+	AddSC_archbishop_benedictus();
+	AddSC_g_marcus_jonathan();
+	AddSC_high_fire_mage();
+	AddSC_high_sorcerer_andromath();
+	AddSC_highlord_bolvar_fordragon();
+	AddSC_city_officer();
+	AddSC_overlord_saurfang();
+	AddSC_thrall();
 
     //world
     AddSC_areatrigger_scripts();
@@ -721,7 +752,10 @@ void AddScripts()
     AddSC_dark_portal();
     AddSC_instance_dark_portal();
     AddSC_hyjal();                                          // Battle of Mount Hyjal
+	AddSC_boss_anetheron();
     AddSC_boss_archimonde();
+    AddSC_boss_azgalor();
+    AddSC_boss_kazrogal();
     AddSC_instance_mount_hyjal();
     AddSC_boss_captain_skarloc();                           // Escape from Durnholde Keep
     AddSC_boss_epoch_hunter();
@@ -752,6 +786,7 @@ void AddScripts()
     AddSC_instance_temple_of_ahnqiraj();
     AddSC_instance_wailing_caverns();                       // Wailing Caverns
     AddSC_zulfarrak();                                      //zulfarrak
+    AddSC_instance_zulfarrak();
 
     AddSC_ashenvale();
     AddSC_azshara();
@@ -760,6 +795,7 @@ void AddScripts()
     AddSC_boss_azuregos();
     AddSC_darkshore();
     AddSC_desolace();
+	AddSC_durotar();
     AddSC_dustwallow_marsh();
     AddSC_felwood();
     AddSC_feralas();
@@ -840,6 +876,8 @@ void AddScripts()
     AddSC_boss_keristrasza();
     AddSC_boss_ormorok();
     AddSC_boss_telestra();
+	AddSC_boss_commander_kolurg();
+	AddSC_boss_commander_stoutbeard();
     AddSC_instance_nexus();
 
     AddSC_oculus();                                         //Oculus
@@ -1003,6 +1041,7 @@ void AddScripts()
     AddSC_boss_kaelthas();                                  //TK, the_eye
     AddSC_boss_void_reaver();
     AddSC_boss_high_astromancer_solarian();
+	AddSC_boss_alar();
     AddSC_instance_the_eye();
     AddSC_the_eye();
     AddSC_boss_gatewatcher_iron_hand();                     //TK, the_mechanar

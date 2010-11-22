@@ -46,9 +46,8 @@ enum
     QUEST_WHAT_BOOK         = 10231,
     ENTRY_CREEPJACK         = 19726,
     ENTRY_MALONE            = 19725,
+    GOSSIP_ITEM_BOOK        = -3000105,
 };
-
-#define GOSSIP_ITEM_BOOK    "Ezekiel said that you might have a certain book..."
 
 struct MANGOS_DLL_DECL npc_dirty_larryAI : public ScriptedAI
 {
@@ -178,6 +177,17 @@ struct MANGOS_DLL_DECL npc_dirty_larryAI : public ScriptedAI
         }
     }
 
+    void AttackedBy(Unit* pAttacker)
+    {
+        if (m_creature->getVictim())
+            return;
+
+        if (!bActiveAttack)
+            return;
+
+        AttackStart(pAttacker);
+    }
+
     void DamageTaken(Unit* pDoneBy, uint32 &damage)
     {
         if (damage < m_creature->GetHealth())
@@ -223,7 +233,7 @@ bool GossipHello_npc_dirty_larry(Player* pPlayer, Creature* pCreature)
         pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
     if (pPlayer->GetQuestStatus(QUEST_WHAT_BOOK) == QUEST_STATUS_INCOMPLETE)
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_BOOK, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM_ID(GOSSIP_ICON_CHAT, GOSSIP_ITEM_BOOK, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
     pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     return true;
@@ -254,8 +264,8 @@ CreatureAI* GetAI_npc_dirty_larry(Creature* pCreature)
 ## npc_ishanah
 ######*/
 
-#define GOSSIP_ISHANAH_1    "Who are the Sha'tar?"
-#define GOSSIP_ISHANAH_2    "Isn't Shattrath a draenei city? Why do you allow others here?"
+#define GOSSIP_ISHANAH_1    "Wer sind die Sha'tar?"
+#define GOSSIP_ISHANAH_2    "Ist Shattrath nicht eine Draeneistadt? Warum lasst Ihr dann auch andere hier zu?"
 
 bool GossipHello_npc_ishanah(Player* pPlayer, Creature* pCreature)
 {
@@ -288,12 +298,12 @@ enum
     QUEST_CITY_LIGHT        = 10211,
 };
 
-#define KHADGAR_GOSSIP_1    "I've heard your name spoken only in whispers, mage. Who are you?"
-#define KHADGAR_GOSSIP_2    "Go on, please."
-#define KHADGAR_GOSSIP_3    "I see."
-#define KHADGAR_GOSSIP_4    "What did you do then?"
-#define KHADGAR_GOSSIP_5    "What happened next?"
-#define KHADGAR_GOSSIP_7    "There was something else I wanted to ask you."
+#define KHADGAR_GOSSIP_1    "Euer Name wird nur mit Ehrfurcht gesprochen, Magier. Wer seid Ihr?"
+#define KHADGAR_GOSSIP_2    "Erzählt weiter, bitte."
+#define KHADGAR_GOSSIP_3    "Ich verstehe."
+#define KHADGAR_GOSSIP_4    "Was tatet Ihr dann?"
+#define KHADGAR_GOSSIP_5    "Was passierte danach?"
+#define KHADGAR_GOSSIP_7    "Es gibt noch etwas anderes, das ich Euch fragen wollte."
 
 bool GossipHello_npc_khadgar(Player* pPlayer, Creature* pCreature)
 {
@@ -643,7 +653,7 @@ enum
     FACTION_HOSTILE_RD      = 45
 };
 
-#define GOSSIP_RALIQ        "You owe Sim'salabim money. Hand them over or die!"
+#define GOSSIP_RALIQ        "Ich wurde von Sal'salabim geschickt, um eine Schuld einzutreiben. Bezahlt, oder ich muss Euch weh tun."
 
 struct MANGOS_DLL_DECL npc_raliq_the_drunkAI : public ScriptedAI
 {
@@ -831,7 +841,7 @@ bool GossipSelect_npc_shattrathflaskvendors(Player* pPlayer, Creature* pCreature
 bool GossipHello_npc_zephyr(Player* pPlayer, Creature* pCreature)
 {
     if (pPlayer->GetReputationRank(989) >= REP_REVERED)
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Take me to the Caverns of Time.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Bringt mich zu den Höhlen der Zeit.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
 
     pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
 

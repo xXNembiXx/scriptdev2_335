@@ -34,7 +34,7 @@ EndContentData */
 ## npc_archmage_malin
 ######*/
 
-#define GOSSIP_ITEM_MALIN "Can you send me to Theramore? I have an urgent message for Lady Jaina from Highlord Bolvar."
+#define GOSSIP_ITEM_MALIN "Könnt ihr mich nach Theramore teleportieren? Ich habe eine wichtige Botschaft Lady Jaina Prachtmeer von Hochlord Bolvar Fordragon."
 
 bool GossipHello_npc_archmage_malin(Player* pPlayer, Creature* pCreature)
 {
@@ -196,10 +196,10 @@ CreatureAI* GetAI_npc_dashel_stonefist(Creature* pCreature)
 ## npc_lady_katrana_prestor
 ######*/
 
-#define GOSSIP_ITEM_KAT_1 "Pardon the intrusion, Lady Prestor, but Highlord Bolvar suggested that I seek your advice."
-#define GOSSIP_ITEM_KAT_2 "My apologies, Lady Prestor."
-#define GOSSIP_ITEM_KAT_3 "Begging your pardon, Lady Prestor. That was not my intent."
-#define GOSSIP_ITEM_KAT_4 "Thank you for your time, Lady Prestor."
+#define GOSSIP_ITEM_KAT_1 "Pardon the intrusion, Lady Prestor, but Highlord Bolvar suggested that I seek your advice." //GMDB TODO
+#define GOSSIP_ITEM_KAT_2 "My apologies, Lady Prestor." //GMDB TODO
+#define GOSSIP_ITEM_KAT_3 "Begging your pardon, Lady Prestor. That was not my intent." //GMDB TODO
+#define GOSSIP_ITEM_KAT_4 "Thank you for your time, Lady Prestor." //GMDB TODO
 
 bool GossipHello_npc_lady_katrana_prestor(Player* pPlayer, Creature* pCreature)
 {
@@ -238,6 +238,31 @@ bool GossipSelect_npc_lady_katrana_prestor(Player* pPlayer, Creature* pCreature,
     return true;
 }
 
+/*######
+## npc_thargold_ironwing
+######*/
+
+#define GOSSIP_ITEM_THAR "Ich möchte durch den Hafen von Sturmwind fliegen."
+
+bool GossipHello_npc_thargold_ironwing(Player* pPlayer, Creature* pCreature)
+{
+    pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_THAR, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+
+    pPlayer->SEND_GOSSIP_MENU(13454, pCreature->GetGUID());
+
+    return true;
+}
+
+bool GossipSelect_npc_thargold_ironwing(Player* pPlayer, Creature* pCreature, uint32 uiSender, uint32 uiAction)
+{
+    if (uiAction == GOSSIP_ACTION_INFO_DEF)
+    {
+		pPlayer->CLOSE_GOSSIP_MENU();
+        pPlayer->GetSession()->SendDoFlight(1149, 1041);
+    }
+    return true;
+}
+
 void AddSC_stormwind_city()
 {
     Script *newscript;
@@ -264,5 +289,11 @@ void AddSC_stormwind_city()
     newscript->Name = "npc_lady_katrana_prestor";
     newscript->pGossipHello = &GossipHello_npc_lady_katrana_prestor;
     newscript->pGossipSelect = &GossipSelect_npc_lady_katrana_prestor;
+    newscript->RegisterSelf();
+
+    newscript = new Script;
+    newscript->Name = "npc_thargold_ironwing";
+    newscript->pGossipHello = &GossipHello_npc_thargold_ironwing;
+    newscript->pGossipSelect = &GossipSelect_npc_thargold_ironwing;
     newscript->RegisterSelf();
 }

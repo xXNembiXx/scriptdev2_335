@@ -396,6 +396,10 @@
 				Name="custom"
 				>
 				<File
+					RelativePath="..\scripts\custom\custom_events.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\scripts\custom\npc_arena_honor.cpp"
 					>
 				</File>
@@ -1260,6 +1264,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\scripts\kalimdor\durotar.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\scripts\kalimdor\dustwallow_marsh.cpp"
 					>
 				</File>
@@ -1410,7 +1418,19 @@
 						Name="hyjal"
 						>
 						<File
+							RelativePath="..\scripts\kalimdor\caverns_of_time\hyjal\boss_anetheron.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\scripts\kalimdor\caverns_of_time\hyjal\boss_archimonde.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\kalimdor\caverns_of_time\hyjal\boss_azgalor.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\kalimdor\caverns_of_time\hyjal\boss_kazrogal.cpp"
 							>
 						</File>
 						<File
@@ -1639,7 +1659,19 @@
 					Name="zulfarrak"
 					>
 					<File
+						RelativePath="..\scripts\kalimdor\zulfarrak\boss_zumrah.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\kalimdor\zulfarrak\instance_zulfarrak.cpp"
+						>
+					</File>
+					<File
 						RelativePath="..\scripts\kalimdor\zulfarrak\zulfarrak.cpp"
+						>
+					</File>
+					<File
+						RelativePath="..\scripts\kalimdor\zulfarrak\zulfarrak.h"
 						>
 					</File>
 				</Filter>
@@ -1749,6 +1781,22 @@
 					<Filter
 						Name="trial_of_the_champion"
 						>
+						<File
+							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_champion\boss_grand_champions.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_champion\instance_trial_of_the_champion.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_champion\trial_of_the_champion.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\crusaders_coliseum\trial_of_the_champion\trial_of_the_champion.h"
+							>
+						</File>
 					</Filter>
 					<Filter
 						Name="trial_of_the_crusader"
@@ -1975,6 +2023,14 @@
 						</File>
 						<File
 							RelativePath="..\scripts\northrend\nexus\nexus\boss_telestra.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\nexus\nexus\commander_kolurg.cpp"
+							>
+						</File>
+						<File
+							RelativePath="..\scripts\northrend\nexus\nexus\commander_stoutbeard.cpp"
 							>
 						</File>
 						<File
@@ -2918,6 +2974,10 @@
 						Name="the_eye"
 						>
 						<File
+							RelativePath="..\scripts\outland\tempest_keep\the_eye\boss_alar.cpp"
+							>
+						</File>
+						<File
 							RelativePath="..\scripts\outland\tempest_keep\the_eye\boss_astromancer.cpp"
 							>
 						</File>
@@ -3021,6 +3081,46 @@
 				</File>
 				<File
 					RelativePath="..\scripts\world\spell_scripts.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="guards"
+				>
+				<File
+					RelativePath="..\scripts\guards\ancient_of_war.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\guards\archbishop_benedictus.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\guards\g_marcus_jonathan.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\guards\high_fire_mage.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\guards\high_sorcerer_andromath.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\guards\highlord_bolvar_fordragon.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\guards\officers.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\guards\overlord_saurfang.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\scripts\guards\thrall.cpp"
 					>
 				</File>
 			</Filter>

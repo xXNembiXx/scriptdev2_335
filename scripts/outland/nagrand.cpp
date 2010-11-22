@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Nagrand
 SD%Complete: 90
-SDComment: Quest support: 9849, 9868, 9874, 9918, 9991, 10044, 10085, 10107, 10108, 10172, 10646. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
+SDComment: Quest support: 9849, 9868, 9874, 9876, 9918, 9991, 10044, 10085, 10107, 10108, 10172, 10646. TextId's unknown for altruis_the_sufferer and greatmother_geyah (npc_text)
 SDCategory: Nagrand
 EndScriptData */
 
@@ -30,6 +30,7 @@ npc_greatmother_geyah
 npc_lantresor_of_the_blade
 npc_maghar_captive
 npc_creditmarker_visit_with_ancestors
+npc_Kurenai_Captive
 EndContentData */
 
 #include "precompiled.h"
@@ -73,34 +74,49 @@ CreatureAI* GetAI_mob_shattered_rumbler(Creature* pCreature)
 }
 
 /*######
-## mob_lump
+## mob_lump - TODO: remove gossip, can be done in database
 ######*/
 
-#define SAY_LUMP_0          -1000190
-#define SAY_LUMP_1          -1000191
-#define SAY_LUMP_DEFEAT     -1000192
+enum
+{
+    QUEST_NOT_ON_MY_WATCH       = 9918,
+    NPC_LUMPS_QUEST_CREDIT      = 18354,
 
-#define SPELL_VISUAL_SLEEP  16093
-#define SPELL_SPEAR_THROW   32248
+    SAY_LUMP_AGGRO_1            = -1000190,
+    SAY_LUMP_AGGRO_2            = -1000191,
+    SAY_LUMP_DEFEAT             = -1000192,
+
+    TEXT_ID_LUMP_1              = 9352,
+    TEXT_ID_LUMP_2              = 9353,
+    TEXT_ID_LUMP_3              = 9354,
+    TEXT_ID_LUMP_4              = 9355,
+    TEXT_ID_LUMP_5              = 9356,
+
+    SPELL_VISUAL_SLEEP          = 16093,
+    SPELL_SPEAR_THROW           = 32248,
+
+    FACTION_FRIENDLY            = 35
+};
 
 struct MANGOS_DLL_DECL mob_lumpAI : public ScriptedAI
 {
     mob_lumpAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        bReset = false;
+        m_bReset = false;
         Reset();
     }
 
-    uint32 Reset_Timer;
-    uint32 Spear_Throw_Timer;
-    bool bReset;
+    uint32 m_uiResetTimer;
+    uint32 m_uiSpearThrowTimer;
+    bool m_bReset;
 
     void Reset()
     {
-        Reset_Timer = 60000;
-        Spear_Throw_Timer = 2000;
+        m_uiResetTimer = MINUTE*IN_MILLISECONDS;
+        m_uiSpearThrowTimer = 2000;
 
-        m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        if (m_creature->getFaction() != m_creature->GetCreatureInfo()->faction_A)
+            m_creature->setFaction(m_creature->GetCreatureInfo()->faction_A);
     }
 
     void AttackedBy(Unit* pAttacker)
@@ -114,30 +130,31 @@ struct MANGOS_DLL_DECL mob_lumpAI : public ScriptedAI
         AttackStart(pAttacker);
     }
 
-    void DamageTaken(Unit *done_by, uint32 & damage)
+    void DamageTaken(Unit* pDealer, uint32& uiDamage)
     {
-        if (done_by->GetTypeId() == TYPEID_PLAYER && (m_creature->GetHealth() - damage)*100 / m_creature->GetMaxHealth() < 30)
+        if (m_creature->GetHealth() < uiDamage || (m_creature->GetHealth() - uiDamage)*100 / m_creature->GetMaxHealth() < 30)
         {
-            if (!bReset && ((Player*)done_by)->GetQuestStatus(9918) == QUEST_STATUS_INCOMPLETE)
+            Player* pPlayer = pDealer->GetCharmerOrOwnerPlayerOrPlayerItself();
+            if (!m_bReset && pPlayer && pPlayer->GetQuestStatus(QUEST_NOT_ON_MY_WATCH) == QUEST_STATUS_INCOMPLETE)
             {
-                //Take 0 damage
-                damage = 0;
+                uiDamage = 0;                               //Take 0 damage
 
-                ((Player*)done_by)->AttackStop();
-                m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 m_creature->RemoveAllAuras();
                 m_creature->DeleteThreatList();
                 m_creature->CombatStop(true);
-                m_creature->setFaction(1080);               //friendly
-                m_creature->SetStandState(UNIT_STAND_STATE_SIT);
-                DoScriptText(SAY_LUMP_DEFEAT, m_creature, done_by);
 
-                bReset = true;
+                // should get unit_flags UNIT_FLAG_OOC_NOT_ATTACKABLE | UNIT_FLAG_PASSIVE at faction change, but unclear why/for what reason, skipped (no flags expected as default)
+                m_creature->setFaction(FACTION_FRIENDLY);
+
+                m_creature->SetStandState(UNIT_STAND_STATE_SIT);
+                DoScriptText(SAY_LUMP_DEFEAT, m_creature, pPlayer);
+
+                m_bReset = true;
             }
         }
     }
 
-    void Aggro(Unit *who)
+    void Aggro(Unit* pWho)
     {
         if (m_creature->HasAura(SPELL_VISUAL_SLEEP, EFFECT_INDEX_0))
             m_creature->RemoveAurasDueToSpell(SPELL_VISUAL_SLEEP);
@@ -145,49 +162,51 @@ struct MANGOS_DLL_DECL mob_lumpAI : public ScriptedAI
         if (!m_creature->IsStandState())
             m_creature->SetStandState(UNIT_STAND_STATE_STAND);
 
-        DoScriptText(urand(0, 1) ? SAY_LUMP_0 : SAY_LUMP_1, m_creature, who);
+        DoScriptText(urand(0, 1) ? SAY_LUMP_AGGRO_1 : SAY_LUMP_AGGRO_2, m_creature, pWho);
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 uiDiff)
     {
-        //check if we waiting for a reset
-        if (bReset)
+        // Check if we waiting for a reset
+        if (m_bReset)
         {
-            if (Reset_Timer < diff)
+            if (m_uiResetTimer < uiDiff)
             {
                 EnterEvadeMode();
-                bReset = false;
-                m_creature->setFaction(1711);               //hostile
+                m_bReset = false;
             }
-            else Reset_Timer -= diff;
+            else
+                m_uiResetTimer -= uiDiff;
         }
 
-        //Return since we have no target
+        // Return since we have no target
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        //Spear_Throw_Timer
-        if (Spear_Throw_Timer < diff)
+        // SpearThrow Timer
+        if (m_uiSpearThrowTimer < uiDiff)
         {
             DoCastSpellIfCan(m_creature->getVictim(), SPELL_SPEAR_THROW);
-            Spear_Throw_Timer = 20000;
-        }else Spear_Throw_Timer -= diff;
+            m_uiSpearThrowTimer = 20000;
+        }
+        else
+            m_uiSpearThrowTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
     }
 };
 
-CreatureAI* GetAI_mob_lump(Creature *_creature)
+CreatureAI* GetAI_mob_lump(Creature* pCreature)
 {
-    return new mob_lumpAI(_creature);
+    return new mob_lumpAI(pCreature);
 }
 
 bool GossipHello_mob_lump(Player* pPlayer, Creature* pCreature)
 {
-    if (pPlayer->GetQuestStatus(9918) == QUEST_STATUS_INCOMPLETE)
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I need answers, ogre!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+    if (pPlayer->GetQuestStatus(QUEST_NOT_ON_MY_WATCH) == QUEST_STATUS_INCOMPLETE)
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich will Antworten, Oger!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
-    pPlayer->SEND_GOSSIP_MENU(9352, pCreature->GetGUID());
+    pPlayer->SEND_GOSSIP_MENU(TEXT_ID_LUMP_1, pCreature->GetGUID());
 
     return true;
 }
@@ -197,20 +216,20 @@ bool GossipSelect_mob_lump(Player* pPlayer, Creature* pCreature, uint32 uiSender
     switch(uiAction)
     {
         case GOSSIP_ACTION_INFO_DEF:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Why are Boulderfist out this far? You know that this is Kurenai territory.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-            pPlayer->SEND_GOSSIP_MENU(9353, pCreature->GetGUID());
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Warum sind die Felsfäuste so weit hier draußen? Ihr wisst, dass dies hier Territorium der Kurenai ist.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            pPlayer->SEND_GOSSIP_MENU(TEXT_ID_LUMP_2, pCreature->GetGUID());
             break;
-        case GOSSIP_ACTION_INFO_DEF+1:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "And you think you can just eat anything you want? You're obviously trying to eat the Broken of Telaar.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
-            pPlayer->SEND_GOSSIP_MENU(9354, pCreature->GetGUID());
+        case GOSSIP_ACTION_INFO_DEF + 1:
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Und Ihr denkt, Ihr könntet alles essen was Ihr wollt? Ihr versucht offensichtlich, die Zerschlagenen von Telaar zu essen.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            pPlayer->SEND_GOSSIP_MENU(TEXT_ID_LUMP_3, pCreature->GetGUID());
             break;
-        case GOSSIP_ACTION_INFO_DEF+2:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "This means war, Lump! War I say!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
-            pPlayer->SEND_GOSSIP_MENU(9355, pCreature->GetGUID());
+        case GOSSIP_ACTION_INFO_DEF + 2:
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Das bedeutet Krieg, Brocken! Krieg, sage ich!", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+            pPlayer->SEND_GOSSIP_MENU(TEXT_ID_LUMP_4, pCreature->GetGUID());
             break;
-        case GOSSIP_ACTION_INFO_DEF+3:
-            pPlayer->SEND_GOSSIP_MENU(9356, pCreature->GetGUID());
-            pPlayer->TalkedToCreature(18354, pCreature->GetGUID());
+        case GOSSIP_ACTION_INFO_DEF + 3:
+            pPlayer->SEND_GOSSIP_MENU(TEXT_ID_LUMP_5, pCreature->GetGUID());
+            pPlayer->TalkedToCreature(NPC_LUMPS_QUEST_CREDIT, pCreature->GetGUID());
             break;
     }
     return true;
@@ -263,15 +282,15 @@ bool GossipHello_npc_altruis_the_sufferer(Player* pPlayer, Creature* pCreature)
 
     //gossip before obtaining Survey the Land
     if (pPlayer->GetQuestStatus(QUEST_SURVEY) == QUEST_STATUS_NONE)
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I see twisted steel and smell sundered earth.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich sehe verbogenen Stahl und rieche zerrissene Erde..", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+10);
 
     //gossip when Survey the Land is incomplete (technically, after the flight)
     if (pPlayer->GetQuestStatus(QUEST_SURVEY) == QUEST_STATUS_INCOMPLETE)
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Well...?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+20);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Nun...?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+20);
 
     //wowwiki.com/Varedis
     if (pPlayer->GetQuestStatus(QUEST_PUPIL) == QUEST_STATUS_INCOMPLETE)
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "[PH] Story about Illidan's Pupil", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+30);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "[PH] Story about Illidan's Pupil", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+30); //GMDB TODO
 
     pPlayer->SEND_GOSSIP_MENU(9419, pCreature->GetGUID());
     return true;
@@ -286,15 +305,15 @@ bool GossipSelect_npc_altruis_the_sufferer(Player* pPlayer, Creature* pCreature,
             pPlayer->SEND_GOSSIP_MENU(9420, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+11:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "And now?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Und nun?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
             pPlayer->SEND_GOSSIP_MENU(9421, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+12:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "How do you see them now?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Wie seht Ihr sie jetzt?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
             pPlayer->SEND_GOSSIP_MENU(9422, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+13:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Forge camps?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 14);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Konstruktionslager?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 14);
             pPlayer->SEND_GOSSIP_MENU(9423, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+14:
@@ -302,7 +321,7 @@ bool GossipSelect_npc_altruis_the_sufferer(Player* pPlayer, Creature* pCreature,
             break;
 
         case GOSSIP_ACTION_INFO_DEF+20:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ok.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 21);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ok.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 21); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(9427, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+21:
@@ -311,7 +330,7 @@ bool GossipSelect_npc_altruis_the_sufferer(Player* pPlayer, Creature* pCreature,
             break;
 
         case GOSSIP_ACTION_INFO_DEF+30:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "[PH] Story done", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 31);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "[PH] Geschichte erzählt", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 31); // Should be verified
             pPlayer->SEND_GOSSIP_MENU(384, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+31:
@@ -344,12 +363,12 @@ bool GossipHello_npc_greatmother_geyah(Player* pPlayer, Creature* pCreature)
 
     if (pPlayer->GetQuestStatus(10044) == QUEST_STATUS_INCOMPLETE)
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Hello, Greatmother. Garrosh told me that you wanted to speak with me.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Hello, Greatmother. Garrosh told me that you wanted to speak with me.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1); //GMDB TODO
         pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     }
     else if (pPlayer->GetQuestStatus(10172) == QUEST_STATUS_INCOMPLETE)
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Garrosh is beyond redemption, Greatmother. I fear that in helping the Mag'har, I have convinced Garrosh that he is unfit to lead.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Garrosh is beyond redemption, Greatmother. I fear that in helping the Mag'har, I have convinced Garrosh that he is unfit to lead.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 10); //GMDB TODO
         pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
     }
     else
@@ -364,27 +383,27 @@ bool GossipSelect_npc_greatmother_geyah(Player* pPlayer, Creature* pCreature, ui
     switch(uiAction)
     {
         case GOSSIP_ACTION_INFO_DEF + 1:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "You raised all of the orcs here, Greatmother?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "You raised all of the orcs here, Greatmother?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 2:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Do you believe that?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Do you believe that?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 3:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "What can be done? I have tried many different things. I have done my best to help the people of Nagrand. Each time I have approached Garrosh, he has dismissed me.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "What can be done? I have tried many different things. I have done my best to help the people of Nagrand. Each time I have approached Garrosh, he has dismissed me.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 4:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Left? How can you choose to leave?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Left? How can you choose to leave?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 5:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "What is this duty?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "What is this duty?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 6:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Is there anything I can do for you, Greatmother?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Is there anything I can do for you, Greatmother?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 7:
@@ -393,23 +412,23 @@ bool GossipSelect_npc_greatmother_geyah(Player* pPlayer, Creature* pCreature, ui
             break;
 
         case GOSSIP_ACTION_INFO_DEF + 10:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I have done all that I could, Greatmother. I thank you for your kind words.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I have done all that I could, Greatmother. I thank you for your kind words.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 11); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 11:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Greatmother, you are the mother of Durotan?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Greatmother, you are the mother of Durotan?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 12); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 12:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Greatmother, I never had the honor. Durotan died long before my time, but his heroics are known to all on my world. The orcs of Azeroth reside in a place known as Durotar, named after your son. And ... (You take a moment to breathe and think through what you are about to tell the Greatmother.)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Greatmother, I never had the honor. Durotan died long before my time, but his heroics are known to all on my world. The orcs of Azeroth reside in a place known as Durotar, named after your son. And ... (You take a moment to breathe and think through what you are about to tell the Greatmother.)", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 13); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 13:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "It is my Warchief, Greatmother. The leader of my people. From my world. He ... He is the son of Durotan. He is your grandchild.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 14);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "It is my Warchief, Greatmother. The leader of my people. From my world. He ... He is the son of Durotan. He is your grandchild.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 14); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 14:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I will return to Azeroth at once, Greatmother.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 15);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I will return to Azeroth at once, Greatmother.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 15); //GMDB TODO
             pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF + 15:
@@ -430,7 +449,7 @@ bool GossipHello_npc_lantresor_of_the_blade(Player* pPlayer, Creature* pCreature
         pPlayer->PrepareQuestMenu(pCreature->GetGUID());
 
     if (pPlayer->GetQuestStatus(10107) == QUEST_STATUS_INCOMPLETE || pPlayer->GetQuestStatus(10108) == QUEST_STATUS_INCOMPLETE)
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I have killed many of your ogres, Lantresor. I have no fear.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich habe viele Eurer Ogers getötet, Lantresor. Ich habe keine Furcht.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
 
     pPlayer->SEND_GOSSIP_MENU(9361, pCreature->GetGUID());
 
@@ -442,31 +461,31 @@ bool GossipSelect_npc_lantresor_of_the_blade(Player* pPlayer, Creature* pCreatur
     switch(uiAction)
     {
         case GOSSIP_ACTION_INFO_DEF:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Should I know? You look like an orc to me.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Sollte ich das? Für mich seht Ihr wie ein Orc aus.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
             pPlayer->SEND_GOSSIP_MENU(9362, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+1:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "And the other half?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Und die andere Hälfte?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
             pPlayer->SEND_GOSSIP_MENU(9363, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "I have heard of your kind, but I never thought to see the day when I would meet a half-breed.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich habe von Eurer Art gehört, aber ich hätte nie geglaubt, den Tag zu erleben, an dem ich ein Halbblut treffe.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
             pPlayer->SEND_GOSSIP_MENU(9364, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "My apologies. I did not mean to offend. I am here on behalf of my people.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich bitte um Verzeihung, ich wollte Euch nicht beleidigen. Ich bin hier im Auftrag meines Volkes.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 4);
             pPlayer->SEND_GOSSIP_MENU(9365, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+4:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "My people ask that you pull back your Boulderfist ogres and cease all attacks on our territories. In return, we will also pull back our forces.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Mein Volk verlangt, dass Ihr Eure Oger der Felsfäuste zurückzieht und alle Angriffe auf unsere Gebiete unterlasst. Im Gegenzug werden wir unsere Streitkräfte ebenfalls zurückziehen.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 5);
             pPlayer->SEND_GOSSIP_MENU(9366, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "We will fight you until the end, then, Lantresor. We will not stand idly by as you pillage our towns and kill our people.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Dann werden wir Euch bis zum Ende bekämpfen, Lantresor. Wir werden nicht tatenlos zusehen, wie ihr unsere Städte plündert und unsere Leute tötet.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 6);
             pPlayer->SEND_GOSSIP_MENU(9367, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+6:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "What do I need to do?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Was muss ich machen?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 7);
             pPlayer->SEND_GOSSIP_MENU(9368, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+7:
@@ -679,58 +698,231 @@ CreatureAI* GetAI_npc_creditmarker_visit_with_ancestors(Creature* pCreature)
     return new npc_creditmarker_visit_with_ancestorsAI(pCreature);
 }
 
+/*#####
+## npc_Kurenai_Captive
+#####*/
+
+enum
+{
+    SAY_START = -1000482,
+    SAY_NO_ESCAPE = -1000483,
+    SAY_MORE = -1000484,
+    SAY_MORE_REPLY = -1000485,
+    SAY_LIGHTNING = -1000486,
+    SAY_SHOCK = -1000487,
+    SAY_COMPLETE = -1999930,
+
+    SPELL_CHAIN_LIGHTNING_A = 16006,
+    SPELL_EARTHBIND_TOTEM_A = 15786,
+    SPELL_FROST_SHOCK_A = 12548,
+    SPELL_HEALING_WAVE_A = 12491,
+
+    QUEST_TOTEM = 9879,
+
+    NPC_MURK_RAIDER_A = 18203,
+    NPC_MURK_BRUTE_A = 18211,
+    NPC_MURK_SCAVENGER_A = 18207,
+    NPC_MURK_PUTRIFIER_A = 18202
+};
+
+static float m_afAmbushC[]= {-1568.805786f, 8533.873047f, 1.958f};
+static float m_afAmbushD[]= {-1491.554321f, 8506.483398f, 1.248f};
+
+struct MANGOS_DLL_DECL npc_Kurenai_CaptiveAI : public npc_escortAI
+{
+    npc_Kurenai_CaptiveAI(Creature* pCreature) : npc_escortAI(pCreature) { Reset(); }
+
+    uint32 m_uiChainLightningTimer;
+    uint32 m_uiHealTimer;
+    uint32 m_uiFrostShockTimer;
+
+    void Reset()
+    {
+        m_uiChainLightningTimer = 1000;
+        m_uiHealTimer = 0;
+        m_uiFrostShockTimer = 6000;
+    }
+
+    void Aggro(Unit* pWho)
+    {
+        m_creature->CastSpell(m_creature, SPELL_EARTHBIND_TOTEM_A, false);
+    }
+
+    void WaypointReached(uint32 uiPointId)
+    {
+        switch(uiPointId)
+        {
+            case 5:
+            {
+                DoScriptText(SAY_MORE, m_creature);
+
+                if (Creature* pTemp = m_creature->SummonCreature(NPC_MURK_PUTRIFIER_A, m_afAmbushD[0], m_afAmbushD[1], m_afAmbushD[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000))
+                DoScriptText(SAY_MORE_REPLY, pTemp);
+
+                m_creature->SummonCreature(NPC_MURK_PUTRIFIER_A, m_afAmbushB[0]-2.5f, m_afAmbushD[1]-2.5f, m_afAmbushD[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+
+                m_creature->SummonCreature(NPC_MURK_SCAVENGER_A, m_afAmbushB[0]+2.5f, m_afAmbushD[1]+2.5f, m_afAmbushD[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                m_creature->SummonCreature(NPC_MURK_SCAVENGER_A, m_afAmbushB[0]+2.5f, m_afAmbushD[1]-2.5f, m_afAmbushD[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                break;
+            }
+            case 7:
+            {
+                DoScriptText(SAY_COMPLETE, m_creature);
+
+                if (Player* pPlayer = GetPlayerForEscort())
+                pPlayer->GroupEventHappens(QUEST_TOTEM, m_creature);
+
+                SetRun();
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    void JustSummoned(Creature* pSummoned)
+    {
+        if (pSummoned->GetEntry() == NPC_MURK_BRUTE_A)
+            DoScriptText(SAY_NO_ESCAPE, pSummoned);
+
+        if (pSummoned->IsTotem())
+            return;
+
+        pSummoned->RemoveSplineFlag(SPLINEFLAG_WALKMODE);
+        pSummoned->GetMotionMaster()->MovePoint(0, m_creature->GetPositionX(), m_creature->GetPositionY(), m_creature->GetPositionZ());
+    }
+
+    void SpellHitTarget(Unit* pTarget, const SpellEntry* pSpell)
+    {
+        if (pSpell->Id == SPELL_CHAIN_LIGHTNING_A)
+        {
+            if (urand(0, 9))
+            return;
+
+            DoScriptText(SAY_LIGHTNING, m_creature);
+        }
+    }
+
+    void UpdateEscortAI(const uint32 uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+
+        if (m_uiChainLightningTimer < uiDiff)
+        {
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_CHAIN_LIGHTNING_A);
+            m_uiChainLightningTimer = urand(7000, 14000);
+        }
+        else
+            m_uiChainLightningTimer -= uiDiff;
+
+        if (m_creature->GetHealthPercent() < 30.0f)
+        {
+            if (m_uiHealTimer < uiDiff)
+            {
+            DoCastSpellIfCan(m_creature, SPELL_HEALING_WAVE_A);
+            m_uiHealTimer = 5000;
+            }
+            else
+                m_uiHealTimer -= uiDiff;
+        }
+
+        if (m_uiFrostShockTimer < uiDiff)
+        {
+            DoCastSpellIfCan(m_creature->getVictim(), SPELL_FROST_SHOCK_A);
+            m_uiFrostShockTimer = urand(7500, 15000);
+        }
+        else
+            m_uiFrostShockTimer -= uiDiff;
+
+        DoMeleeAttackIfReady();
+    }
+};
+
+bool QuestAccept_npc_Kurenai_Captive(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+{
+    if (pQuest->GetQuestId() == QUEST_TOTEM)
+    {
+        if (npc_Kurenai_CaptiveAI* pEscortAI = dynamic_cast<npc_Kurenai_CaptiveAI*>(pCreature->AI()))
+        {
+            pCreature->SetStandState(UNIT_STAND_STATE_STAND);
+            pCreature->setFaction(FACTION_ESCORT_A_NEUTRAL_ACTIVE);
+
+            pEscortAI->Start(false, pPlayer->GetGUID(), pQuest);
+
+            DoScriptText(SAY_START, pCreature);
+
+            pCreature->SummonCreature(NPC_MURK_RAIDER_A, m_afAmbushC[0]+2.5f, m_afAmbushC[1]-2.5f, m_afAmbushC[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+            pCreature->SummonCreature(NPC_MURK_PUTRIFIER_A, m_afAmbushC[0]-2.5f, m_afAmbushC[1]+2.5f, m_afAmbushC[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+            pCreature->SummonCreature(NPC_MURK_BRUTE_A, m_afAmbushC[0], m_afAmbushC[1], m_afAmbushC[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+        }
+    }
+    return true;
+}
+
+CreatureAI* GetAI_npc_Kurenai_Captive(Creature* pCreature)
+{
+    return new npc_Kurenai_CaptiveAI(pCreature);
+}
+
 /*######
 ## AddSC
 ######*/
 
 void AddSC_nagrand()
 {
-    Script *newscript;
+    Script* pNewScript;
 
-    newscript = new Script;
-    newscript->Name = "mob_shattered_rumbler";
-    newscript->GetAI = &GetAI_mob_shattered_rumbler;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "mob_shattered_rumbler";
+    pNewScript->GetAI = &GetAI_mob_shattered_rumbler;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "mob_lump";
-    newscript->GetAI = &GetAI_mob_lump;
-    newscript->pGossipHello =  &GossipHello_mob_lump;
-    newscript->pGossipSelect = &GossipSelect_mob_lump;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "mob_lump";
+    pNewScript->GetAI = &GetAI_mob_lump;
+    pNewScript->pGossipHello =  &GossipHello_mob_lump;
+    pNewScript->pGossipSelect = &GossipSelect_mob_lump;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "mob_sunspring_villager";
-    newscript->GetAI = &GetAI_mob_sunspring_villager;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "mob_sunspring_villager";
+    pNewScript->GetAI = &GetAI_mob_sunspring_villager;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_altruis_the_sufferer";
-    newscript->pGossipHello =  &GossipHello_npc_altruis_the_sufferer;
-    newscript->pGossipSelect = &GossipSelect_npc_altruis_the_sufferer;
-    newscript->pQuestAccept =  &QuestAccept_npc_altruis_the_sufferer;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_altruis_the_sufferer";
+    pNewScript->pGossipHello =  &GossipHello_npc_altruis_the_sufferer;
+    pNewScript->pGossipSelect = &GossipSelect_npc_altruis_the_sufferer;
+    pNewScript->pQuestAccept =  &QuestAccept_npc_altruis_the_sufferer;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_greatmother_geyah";
-    newscript->pGossipHello =  &GossipHello_npc_greatmother_geyah;
-    newscript->pGossipSelect = &GossipSelect_npc_greatmother_geyah;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_greatmother_geyah";
+    pNewScript->pGossipHello =  &GossipHello_npc_greatmother_geyah;
+    pNewScript->pGossipSelect = &GossipSelect_npc_greatmother_geyah;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_lantresor_of_the_blade";
-    newscript->pGossipHello =  &GossipHello_npc_lantresor_of_the_blade;
-    newscript->pGossipSelect = &GossipSelect_npc_lantresor_of_the_blade;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_lantresor_of_the_blade";
+    pNewScript->pGossipHello =  &GossipHello_npc_lantresor_of_the_blade;
+    pNewScript->pGossipSelect = &GossipSelect_npc_lantresor_of_the_blade;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_maghar_captive";
-    newscript->GetAI = &GetAI_npc_maghar_captive;
-    newscript->pQuestAccept = &QuestAccept_npc_maghar_captive;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_maghar_captive";
+    pNewScript->GetAI = &GetAI_npc_maghar_captive;
+    pNewScript->pQuestAccept = &QuestAccept_npc_maghar_captive;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_creditmarker_visit_with_ancestors";
-    newscript->GetAI = &GetAI_npc_creditmarker_visit_with_ancestors;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_creditmarker_visit_with_ancestors";
+    pNewScript->GetAI = &GetAI_npc_creditmarker_visit_with_ancestors;
+    pNewScript->RegisterSelf();
+
+	pNewScript = new Script;
+    pNewScript->Name = "npc_Kurenai_Captive";
+    pNewScript->GetAI = &GetAI_npc_Kurenai_Captive;
+    pNewScript->pQuestAccept = &QuestAccept_npc_Kurenai_Captive;
+    pNewScript->RegisterSelf();
 }

@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Borean_Tundra
 SD%Complete: 100
-SDComment: Quest support: 11570, 11590, 11692, 11676, 11708, 11919, 11940, 11961. Taxi vendors. 
+SDComment: Quest support: 11570, 11590, 11608, 11692, 11676, 11708, 11881, 11919, 11940, 11961. Taxi vendors. 
 SDCategory: Borean Tundra
 EndScriptData */
 
@@ -33,6 +33,8 @@ npc_lurgglbr
 npc_nexus_drake
 go_scourge_cage
 npc_beryl_sorcerer
+npc_fezzix_geartwist
+npc_nerubar_sinkhole
 EndContentData */
 
 #include "precompiled.h"
@@ -44,8 +46,8 @@ EndContentData */
 ## npc_fizzcrank_fullthrottle
 ######*/
 
-#define GOSSIP_ITEM_GO_ON   "Go on."
-#define GOSSIP_ITEM_TELL_ME "Tell me what's going on out here, Fizzcrank."
+#define GOSSIP_ITEM_GO_ON   "Weiter."
+#define GOSSIP_ITEM_TELL_ME "Erzähl mir, was hier vor sich geht, Kurbelzisch."
 
 enum
 {
@@ -122,7 +124,7 @@ bool GossipSelect_npc_fizzcrank_fullthrottle(Player* pPlayer, Creature* pCreatur
 ## npc_iruk
 ######*/
 
-#define GOSSIP_ITEM_IRUK        "<Search corpse for Issliruk's Totem.>"
+#define GOSSIP_ITEM_IRUK        "<Durchsucht die Leiche nach Issliruks Totem.>"
 
 enum
 {
@@ -154,8 +156,8 @@ bool GossipSelect_npc_iruk(Player* pPlayer, Creature* pCreature, uint32 uiSender
 ## npc_kara_thricestar
 ######*/
 
-#define GOSSIP_ITEM_THRICESTAR1      "Do you think I could take a ride on one of those flying machines?"
-#define GOSSIP_ITEM_THRICESTAR2      "Kara, I need to be flown out the Dens of Dying to find Bixie."
+#define GOSSIP_ITEM_THRICESTAR1      "Glaubt Ihr, ich könnte eine dieser Flugmaschinen benutzen?"
+#define GOSSIP_ITEM_THRICESTAR2      "Kara, Ich muss zu den Höhlen des Todes ausgeflogen werden, um Bixie zu finden."
 
 enum
 {
@@ -324,8 +326,8 @@ bool GOHello_go_caribou_trap(Player* pPlayer, GameObject* pGo)
 ## npc_surristrasz
 ######*/
 
-#define GOSSIP_ITEM_FREE_FLIGHT "I'd like passage to the Transitus Shield."
-#define GOSSIP_ITEM_FLIGHT      "May I use a drake to fly elsewhere?"
+#define GOSSIP_ITEM_FREE_FLIGHT "Ich möchte Durchgang zum Titusschild."
+#define GOSSIP_ITEM_FLIGHT      "Darf ich den Drachen benutzen, um woanders hinzufliegen?"
 
 enum
 {
@@ -367,7 +369,7 @@ bool GossipSelect_npc_surristrasz(Player* pPlayer, Creature* pCreature, uint32 u
 ## npc_tiare
 ######*/
 
-#define GOSSIP_ITEM_TELEPORT    "Teleport me to Amber Ledge, please."
+#define GOSSIP_ITEM_TELEPORT    "Teleportiert mich zum Bernsteinflöz, bitte."
 
 enum
 {
@@ -741,6 +743,267 @@ CreatureAI* GetAI_npc_beryl_sorcerer(Creature* pCreature)
     return new npc_beryl_sorcererAI(pCreature);
 }
 
+/*######
+## npc_fezzix_geartwist
+######*/
+
+struct MANGOS_DLL_DECL npc_fezzix_geartwistAI : public ScriptedAI
+{
+    npc_fezzix_geartwistAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    void Reset()
+    {
+    }
+
+	void MoveInLineOfSight(Unit* pWho)
+    {
+        if (!pWho || pWho->GetEntry() != 25969)
+            return;
+
+        if (!m_creature->IsWithinDist(pWho, 5.0f))
+            return;
+
+        Player *pPlayer = pWho->GetCharmerOrOwnerPlayerOrPlayerItself();
+
+		pPlayer->KilledMonsterCredit(pWho->GetEntry(),pWho->GetGUID());
+
+		pWho->RemoveFromWorld();
+
+        return;
+    }
+
+};
+
+CreatureAI* GetAI_npc_fezzix_geartwist(Creature* pCreature)
+{
+    return new npc_fezzix_geartwistAI(pCreature);
+}
+
+/*######
+## npc_nerubar_sinkhole
+######*/
+
+enum nerubar_sinkhole
+{
+	SPELL_SEAFORIUM_DEPTH_CHARGE_EXPLOSION	= 45502,	//spell doesn't effect Player
+	SPELL_EXPLOSION_EFFECT					= 46419,	//find the right spell or fix first, this is only temp
+
+	GO_RUBBLE								= 187669,
+
+	NPC_SEAFORIUM_DEPTH_CHARGE				= 25401
+};
+
+struct MANGOS_DLL_DECL npc_nerubar_sinkholeAI : public ScriptedAI
+{
+    npc_nerubar_sinkholeAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+	uint32 BombTimer;
+	uint32 m_uiEventPhase;
+	float x,y,z;
+
+    void Reset()
+    {
+		BombTimer = urand(5000,10000);
+		m_uiEventPhase = 1;
+		x=y=z=0;
+    }
+
+	void UpdateAI(const uint32 diff)
+	{
+		Creature* pChargeBundle = m_creature->GetClosestCreatureWithEntry(m_creature,NPC_SEAFORIUM_DEPTH_CHARGE,20.0f);
+
+		if(pChargeBundle)
+		{
+	        if (BombTimer < diff)
+	        {
+				pChargeBundle->CastSpell(pChargeBundle, SPELL_EXPLOSION_EFFECT, true);
+
+				x = m_creature->GetPositionX();
+				y = m_creature->GetPositionY();
+				z = m_creature->GetPositionZ();
+						
+				pChargeBundle->CastSpell(pChargeBundle, SPELL_SEAFORIUM_DEPTH_CHARGE_EXPLOSION, true);
+				
+				m_creature->GetMotionMaster()->MoveTargetedHome();
+
+				pChargeBundle->SetDeathState(JUST_DIED);
+				pChargeBundle->RemoveFromWorld();
+
+				GameObject* pRubble = pChargeBundle->SummonGameobject(GO_RUBBLE, x, y, z, 0, 20000);
+				pRubble->SetGoType(GAMEOBJECT_TYPE_GENERIC);
+				
+				Unit* pPlayer = pChargeBundle->GetCharmerOrOwnerPlayerOrPlayerItself();
+				if (pPlayer)
+				{
+					((Player*)pPlayer)->KilledMonsterCredit(m_creature->GetEntry(),m_creature->GetGUID());
+				}
+
+				m_creature->GetMotionMaster()->MoveTargetedHome();
+
+				Reset();
+			}else BombTimer -= diff;
+		}
+	}
+};
+
+CreatureAI* GetAI_npc_nerubar_sinkhole(Creature* pCreature)
+{
+    return new npc_nerubar_sinkholeAI(pCreature);
+}
+
+/*######
+## trident_of_nazjan
+######*/
+
+enum
+{
+	AREA_LEVIROTH	= 4029	,
+	LEVIROTH_ENTRY	= 26452
+};
+
+bool ItemUse_trident_of_nazjan(Player* pPlayer, Item* pItem, SpellCastTargets const& scTargets)
+{
+	Creature *c = GetClosestCreatureWithEntry(pPlayer,LEVIROTH_ENTRY,9.0f);
+
+	if( pPlayer->GetAreaId() != AREA_LEVIROTH )
+	{
+		pPlayer->SendEquipError(EQUIP_ERR_CANT_DO_RIGHT_NOW, NULL);
+		return true;
+	}
+	else if( !c )
+	{
+		pPlayer->SendEquipError(EQUIP_ERR_OUT_OF_RANGE, pItem, NULL);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+/*######
+## npc_leviroth
+######*/ 
+
+struct MANGOS_DLL_DECL npc_levirothAI : public ScriptedAI
+{
+    bool spellHit;
+
+    npc_levirothAI(Creature* pCreature) : ScriptedAI(pCreature)
+	{
+		Reset();
+	}
+
+    void Reset()
+    {
+		m_creature->SetStandState(UNIT_STAND_STATE_DEAD);
+        spellHit = false;
+    }
+
+    void MoveInLineOfSight(Unit *who)
+	{
+	
+	}
+
+    void UpdateAI(const uint32 diff)
+    {
+		if(spellHit)
+			DoMeleeAttackIfReady();
+    }
+
+    void SpellHit(Unit *Hitter, const SpellEntry *spellkind)
+    {
+        if (spellkind->Id == 47170)
+        {
+			m_creature->SetHealthPercent(8.0);
+			m_creature->SetStandState(UNIT_STAND_STATE_STAND);
+			m_creature->AI()->AttackStart(Hitter);
+
+            spellHit = true;
+        }
+	}
+};
+
+CreatureAI* GetAI_npc_leviroth(Creature* pCreature)
+{
+    return new npc_levirothAI(pCreature);
+}
+
+/*######
+## npc_scourged_flamespitter
+######*/
+
+struct MANGOS_DLL_DECL npc_scourged_flamespitterAI : public ScriptedAI
+{
+    npc_scourged_flamespitterAI(Creature* pCreature) : ScriptedAI(pCreature)
+	{
+		Reset();
+	}
+
+    void Reset()
+    {
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+		DoMeleeAttackIfReady();
+    }
+
+    void SpellHit(Unit *hitter, const SpellEntry *spellkind)
+    {
+        if (spellkind->Id == 46361)
+        {
+			m_creature->AI()->AttackStart(hitter);
+        }
+	}
+};
+
+CreatureAI* GetAI_npc_scourged_flamespitter(Creature* pCreature)
+{
+    return new npc_scourged_flamespitterAI(pCreature);
+}
+
+/*######
+## npc_gnome_soul
+######*/
+
+struct MANGOS_DLL_DECL npc_gnome_soulAI : public ScriptedAI
+{
+    npc_gnome_soulAI(Creature* pCreature) : ScriptedAI(pCreature)
+	{
+		Reset();
+	}
+
+	uint32 m_uiWaitTimer;
+	Player* pPlayer;
+
+    void Reset()
+    {
+		pPlayer = NULL;
+		pPlayer = GetPlayerAtMinimumRange(20.0f);
+		m_uiWaitTimer = 3000;
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+		if(pPlayer)
+		{
+			if(m_uiWaitTimer <= diff)
+			{
+				m_creature->DealDamage(m_creature, m_creature->GetHealth(), NULL,DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL ,false); 
+				pPlayer->KilledMonsterCredit(m_creature->GetEntry(), pPlayer->GetGUID());
+			}
+			else
+				m_uiWaitTimer-=diff;
+		}
+    }
+};
+
+CreatureAI* GetAI_npc_gnome_soul(Creature* pCreature)
+{
+    return new npc_gnome_soulAI(pCreature);
+}
+
 void AddSC_borean_tundra()
 {
     Script *newscript;
@@ -804,5 +1067,35 @@ void AddSC_borean_tundra()
     newscript = new Script;
     newscript->Name = "npc_beryl_sorcerer";
     newscript->GetAI = &GetAI_npc_beryl_sorcerer;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+	newscript->Name = "npc_fezzix_geartwist";
+	newscript->GetAI = &GetAI_npc_fezzix_geartwist;
+	newscript->RegisterSelf();
+
+	newscript = new Script;
+	newscript->Name = "npc_nerubar_sinkhole";
+	newscript->GetAI = &GetAI_npc_nerubar_sinkhole;
+	newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "trident_of_nazjan";
+    newscript->pItemUse = &ItemUse_trident_of_nazjan;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "npc_leviroth";
+    newscript->GetAI = &GetAI_npc_leviroth;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "npc_scourged_flamespitter";
+    newscript->GetAI = &GetAI_npc_scourged_flamespitter;
+    newscript->RegisterSelf();
+
+	newscript = new Script;
+    newscript->Name = "npc_gnome_soul";
+    newscript->GetAI = &GetAI_npc_gnome_soul;
     newscript->RegisterSelf();
 }

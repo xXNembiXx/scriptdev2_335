@@ -17,7 +17,7 @@
 /* ScriptData
 SDName: Western_Plaguelands
 SD%Complete: 90
-SDComment: Quest support: 5216,5219,5222,5225,5229,5231,5233,5235. To obtain Vitreous Focuser (could use more spesifics about gossip items)
+SDComment: Quest support: 5097,5098,5216,5219,5222,5225,5229,5231,5233,5235. To obtain Vitreous Focuser (could use more spesifics about gossip items)
 SDCategory: Western Plaguelands
 EndScriptData */
 
@@ -25,6 +25,7 @@ EndScriptData */
 npcs_dithers_and_arbington
 npc_myranda_hag
 npc_the_scourge_cauldron
+npc_andorhal_tower
 EndContentData */
 
 #include "precompiled.h"
@@ -42,10 +43,10 @@ bool GossipHello_npcs_dithers_and_arbington(Player* pPlayer, Creature* pCreature
 
     if (pPlayer->GetQuestRewardStatus(5237) || pPlayer->GetQuestRewardStatus(5238))
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "What does the Felstone Field Cauldron need?",      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "What does the Dalson's Tears Cauldron need?",      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "What does the Writhing Haunt Cauldron need?",      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "What does the Gahrron's Withering Cauldron need?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Was wird für den Kessel des Teufelssteinfelds benötigt?",      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Was wird für den Kessel von Dalsons Tränenfeld benötigt?",      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Was wird für den Kessel des trostlosen Felds benötigt?",      GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+3);
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Was wird für den Kessel von Gahrrons Trauerfeld benötigt?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+4);
         pPlayer->SEND_GOSSIP_MENU(3985, pCreature->GetGUID());
     }else
         pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
@@ -61,19 +62,19 @@ bool GossipSelect_npcs_dithers_and_arbington(Player* pPlayer, Creature* pCreatur
             pPlayer->SEND_VENDORLIST(pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+1:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Thanks, i need a Vitreous Focuser", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich brauche einen glasartigen Fokussierer.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
             pPlayer->SEND_GOSSIP_MENU(3980, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+2:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Thanks, i need a Vitreous Focuser", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich brauche einen glasartigen Fokussierer.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
             pPlayer->SEND_GOSSIP_MENU(3981, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+3:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Thanks, i need a Vitreous Focuser", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich brauche einen glasartigen Fokussierer.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
             pPlayer->SEND_GOSSIP_MENU(3982, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+4:
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Thanks, i need a Vitreous Focuser", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Ich brauche einen glasartigen Fokussierer.", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+5);
             pPlayer->SEND_GOSSIP_MENU(3983, pCreature->GetGUID());
             break;
         case GOSSIP_ACTION_INFO_DEF+5:
@@ -95,7 +96,7 @@ enum
     SPELL_SCARLET_ILLUSION  = 17961
 };
 
-#define GOSSIP_ITEM_ILLUSION    "I am ready for the illusion, Myranda."
+#define GOSSIP_ITEM_ILLUSION    "I am ready for the illusion, Myranda." //GMDB TODO
 
 bool GossipHello_npc_myranda_the_hag(Player* pPlayer, Creature* pCreature)
 {
@@ -196,6 +197,56 @@ CreatureAI* GetAI_npc_the_scourge_cauldron(Creature* pCreature)
 }
 
 /*######
+# npc_andorhal_towerAI
+######*/
+
+enum
+{
+	GO_BEACON_TORCH_ENTRY	=	176093,
+
+	QUEST_ALL_ALONG_THE_WATCHTOWERS_A	=	5097,
+	QUEST_ALL_ALONG_THE_WATCHTOWERS_H	=	5098
+};
+
+struct MANGOS_DLL_DECL npc_andorhal_towerAI : public ScriptedAI
+{
+	npc_andorhal_towerAI(Creature* pCreature) : ScriptedAI(pCreature)
+	{
+		Reset();
+	}
+	
+	Player* pPlayer;
+
+	void Reset()
+	{
+		pPlayer = NULL;
+	}
+
+	void MoveInLineOfSight(Unit* pWho) 
+	{
+		if(pWho->GetTypeId() != TYPEID_PLAYER)
+			return;
+
+
+		pPlayer = (Player*)pWho;
+
+		if(pPlayer 
+			&& pPlayer->GetQuestStatus(pPlayer->GetTeam() == HORDE ? QUEST_ALL_ALONG_THE_WATCHTOWERS_H : QUEST_ALL_ALONG_THE_WATCHTOWERS_A) == QUEST_STATUS_INCOMPLETE)
+		{
+			if(GetClosestGameObjectWithEntry(m_creature, GO_BEACON_TORCH_ENTRY, 15.0f))
+			{
+				pPlayer->KilledMonsterCredit(m_creature->GetEntry(), m_creature->GetGUID());
+			}
+		}
+	}
+};
+
+CreatureAI* GetAI_npc_andorhal_tower(Creature* pCreature)
+{
+	return new npc_andorhal_towerAI(pCreature);
+}
+
+/*######
 ##
 ######*/
 
@@ -219,4 +270,9 @@ void AddSC_western_plaguelands()
     newscript->Name = "npc_the_scourge_cauldron";
     newscript->GetAI = &GetAI_npc_the_scourge_cauldron;
     newscript->RegisterSelf();
+
+	newscript = new Script;
+	newscript->Name = "npc_andorhal_tower";
+	newscript->GetAI = &GetAI_npc_andorhal_tower;
+	newscript->RegisterSelf();
 }

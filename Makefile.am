@@ -50,8 +50,18 @@ include/sc_grid_searchers.h \
 include/sc_instance.cpp \
 include/sc_instance.h \
 scripts/battlegrounds/battleground.cpp \
+scripts/custom/custom_events.cpp \
 scripts/custom/npc_arena_honor.cpp \
 scripts/custom/teleguy.cpp \
+scripts/guards/ancient_of_war.cpp \
+scripts/guards/archbishop_benedictus.cpp \
+scripts/guards/g_marcus_jonathan.cpp \
+scripts/guards/high_fire_mage.cpp \
+scripts/guards/high_sorcerer_andromath.cpp \
+scripts/guards/highlord_bolvar_fordragon.cpp \
+scripts/guards/officers.cpp \
+scripts/guards/overlord_saurfang.cpp \
+scripts/guards/thrall.cpp \
 scripts/eastern_kingdoms/alterac_mountains.cpp \
 scripts/eastern_kingdoms/arathi_highlands.cpp \
 scripts/eastern_kingdoms/blasted_lands.cpp \
@@ -244,6 +254,7 @@ scripts/kalimdor/bloodmyst_isle.cpp \
 scripts/kalimdor/boss_azuregos.cpp \
 scripts/kalimdor/darkshore.cpp \
 scripts/kalimdor/desolace.cpp \
+scripts/kalimdor/durotar.cpp \
 scripts/kalimdor/dustwallow_marsh.cpp \
 scripts/kalimdor/felwood.cpp \
 scripts/kalimdor/feralas.cpp \
@@ -268,6 +279,9 @@ scripts/kalimdor/caverns_of_time/dark_portal/dark_portal.cpp \
 scripts/kalimdor/caverns_of_time/dark_portal/dark_portal.h \
 scripts/kalimdor/caverns_of_time/dark_portal/instance_dark_portal.cpp \
 scripts/kalimdor/caverns_of_time/hyjal/boss_archimonde.cpp \
+scripts/kalimdor/caverns_of_time/hyjal/boss_anetheron.cpp \
+scripts/kalimdor/caverns_of_time/hyjal/boss_azgalor.cpp \
+scripts/kalimdor/caverns_of_time/hyjal/boss_kazrogal.cpp \
 scripts/kalimdor/caverns_of_time/hyjal/hyjal.cpp \
 scripts/kalimdor/caverns_of_time/hyjal/hyjal.h \
 scripts/kalimdor/caverns_of_time/hyjal/hyjalAI.cpp \
@@ -313,7 +327,10 @@ scripts/kalimdor/temple_of_ahnqiraj/mob_anubisath_sentinel.cpp \
 scripts/kalimdor/temple_of_ahnqiraj/temple_of_ahnqiraj.h \
 scripts/kalimdor/wailing_caverns/instance_wailing_caverns.cpp \
 scripts/kalimdor/wailing_caverns/wailing_caverns.h \
+scripts/kalimdor/zulfarrak/boss_zumrah.cpp \
+scripts/kalimdor/zulfarrak/instance_zulfarrak.cpp \
 scripts/kalimdor/zulfarrak/zulfarrak.cpp \
+scripts/kalimdor/zulfarrak/zulfarrak.h \
 scripts/northrend/borean_tundra.cpp \
 scripts/northrend/dalaran.cpp \
 scripts/northrend/dragonblight.cpp \
@@ -404,6 +421,8 @@ scripts/northrend/nexus/nexus/boss_anomalus.cpp \
 scripts/northrend/nexus/nexus/boss_keristrasza.cpp \
 scripts/northrend/nexus/nexus/boss_ormorok.cpp \
 scripts/northrend/nexus/nexus/boss_telestra.cpp \
+scripts/northrend/nexus/nexus/commander_kolurg.cpp \
+scripts/northrend/nexus/nexus/commander_stoutbeard.cpp \
 scripts/northrend/nexus/nexus/nexus.h \
 scripts/northrend/nexus/nexus/instance_nexus.cpp \
 scripts/northrend/nexus/oculus/oculus.h \
@@ -547,6 +566,7 @@ scripts/outland/tempest_keep/botanica/boss_warp_splinter.cpp \
 scripts/outland/tempest_keep/the_eye/boss_astromancer.cpp \
 scripts/outland/tempest_keep/the_eye/boss_kaelthas.cpp \
 scripts/outland/tempest_keep/the_eye/boss_void_reaver.cpp \
+scripts/outland/tempest_keep/the_eye/boss_alar.cpp \
 scripts/outland/tempest_keep/the_eye/instance_the_eye.cpp \
 scripts/outland/tempest_keep/the_eye/the_eye.cpp \
 scripts/outland/tempest_keep/the_eye/the_eye.h \

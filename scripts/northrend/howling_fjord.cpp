@@ -17,16 +17,17 @@
 /* ScriptData
 SDName: Howling_Fjord
 SD%Complete: ?
-SDComment: Quest support: 11221, 11483, 11464, 11300
+SDComment: Quest support: 11221, 11483, 11464, 11300, 11317, 11322
 SDCategory: Howling Fjord
 EndScriptData */
 
 /* ContentData
 npc_daegarn
-npc_deathstalker_razael
-npc_dark_ranger_lyana
-npc_mcgoyver
+npc_deathstalker_razael - TODO, can be moved to database
+npc_dark_ranger_lyana - TODO, can be moved to database
+npc_mcgoyver - TODO, can be moved to database
 npc_silvermoon_harry
+npc_your_inner_turmoil
 EndContentData */
 
 #include "precompiled.h"
@@ -144,11 +145,11 @@ CreatureAI* GetAI_npc_daegarn(Creature* pCreature)
     return new npc_daegarnAI(pCreature);
 }
 
-/*#######################
-## Deathstalker Razael ##
-#######################*/
+/*######
+## npc_deathstalker_razael - TODO, can be moved to database
+######*/
 
-#define GOSSIP_ITEM_DEATHSTALKER_RAZAEL "High Executor Anselm requests your report."
+#define GOSSIP_ITEM_DEATHSTALKER_RAZAEL "Hochexekutor Anselm verlangt einen Bericht über die Situation."
 
 enum
 {
@@ -191,7 +192,7 @@ bool GossipSelect_npc_deathstalker_razael(Player* pPlayer, Creature* pCreature, 
 ## npc_dark_ranger_lyana - TODO, can be moved to database
 ######*/
 
-#define GOSSIP_ITEM_DARK_RANGER_LYANA "High Executor Anselm requests your report."
+#define GOSSIP_ITEM_DARK_RANGER_LYANA "Hochexekutor Anselm erbittet Euren Bericht."
 
 enum
 {
@@ -233,8 +234,8 @@ bool GossipSelect_npc_dark_ranger_lyana(Player* pPlayer, Creature* pCreature, ui
 ## npc_mcgoyver - TODO, can be moved to database
 ######*/
 
-#define GOSSIP_ITEM_MCGOYVER1 "Walt sent me to pick up some dark iron ingots."
-#define GOSSIP_ITEM_MCGOYVER2 "Yarp."
+#define GOSSIP_ITEM_MCGOYVER1 "Walt hat mich geschickt, um ein paar Dunkeleisenblöcke abzuholen."
+#define GOSSIP_ITEM_MCGOYVER2 "Jarp."
 
 enum
 {
@@ -301,7 +302,7 @@ enum
 {
     QUEST_GAMBLING_DEBT         = 11464,
 
-    SAY_AGRO                    = -1000603,
+    SAY_AGGRO                   = -1000603,
     SAY_BEATEN                  = -1000604,
 
     GOSSIP_ITEM_GAMBLING_DEBT   = -3000101,
@@ -311,16 +312,12 @@ enum
     SPELL_SCORCH                = 50183,
 
     ITEM_HARRY_DEBT             = 34115,
-    FACTION_HOSTILE_SH          = 90,
+    FACTION_HOSTILE_SH          = 90,                       // guessed, possibly not correct
 };
 
 struct MANGOS_DLL_DECL npc_silvermoon_harryAI : public ScriptedAI
 {
-    npc_silvermoon_harryAI(Creature* pCreature) : ScriptedAI(pCreature)
-    {
-        m_bHarryBeaten = false;
-        Reset();
-    }
+    npc_silvermoon_harryAI(Creature* pCreature) : ScriptedAI(pCreature) { Reset(); }
 
     bool m_bHarryBeaten;
     uint32 m_uiBlastWaveTimer;
@@ -329,12 +326,54 @@ struct MANGOS_DLL_DECL npc_silvermoon_harryAI : public ScriptedAI
 
     void Reset()
     {
+        m_bHarryBeaten = false;
+
+        // timers guessed
         m_uiScorchTimer = 5*IN_MILLISECONDS;
         m_uiBlastWaveTimer = 7*IN_MILLISECONDS;
+
         m_uiResetBeatenTimer = MINUTE*IN_MILLISECONDS;
 
         if (m_creature->getFaction() != m_creature->GetCreatureInfo()->faction_A)
             m_creature->setFaction(m_creature->GetCreatureInfo()->faction_A);
+    }
+
+    void AttackedBy(Unit* pAttacker)
+    {
+        if (m_creature->getVictim())
+            return;
+
+        if (m_creature->IsHostileTo(pAttacker))
+            AttackStart(pAttacker);
+    }
+
+    void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
+    {
+        if (uiDamage > m_creature->GetHealth() || (m_creature->GetHealth() - uiDamage)*100 / m_creature->GetMaxHealth() < 20)
+        {
+            if (Player* pPlayer = pDoneBy->GetCharmerOrOwnerPlayerOrPlayerItself())
+            {
+                if (!m_bHarryBeaten && pPlayer->GetQuestStatus(QUEST_GAMBLING_DEBT) == QUEST_STATUS_INCOMPLETE)
+                {
+                    uiDamage = 0;                           // Take 0 damage
+
+                    m_creature->RemoveAllAuras();
+                    m_creature->DeleteThreatList();
+                    m_creature->CombatStop(true);
+
+                    if (m_creature->getFaction() != m_creature->GetCreatureInfo()->faction_A)
+                        m_creature->setFaction(m_creature->GetCreatureInfo()->faction_A);
+
+                    DoScriptText(SAY_BEATEN, m_creature);
+                    m_bHarryBeaten = true;
+                }
+            }
+        }
+    }
+
+    bool IsBeaten()
+    {
+        return m_bHarryBeaten;
     }
 
     void UpdateAI(const uint32 uiDiff)
@@ -342,21 +381,13 @@ struct MANGOS_DLL_DECL npc_silvermoon_harryAI : public ScriptedAI
         if (m_bHarryBeaten)
         {
             if (m_uiResetBeatenTimer < uiDiff)
-                m_bHarryBeaten = false;
+                EnterEvadeMode();
             else
                 m_uiResetBeatenTimer-= uiDiff;
         }
 
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
-
-        if (m_creature->GetHealthPercent() < 20.0f && !m_bHarryBeaten)
-        {
-            DoScriptText(SAY_BEATEN, m_creature);
-            EnterEvadeMode();
-            m_bHarryBeaten = true;
-            return;
-        }
 
         if (m_uiScorchTimer < uiDiff)
         {
@@ -365,7 +396,6 @@ struct MANGOS_DLL_DECL npc_silvermoon_harryAI : public ScriptedAI
         }
         else
             m_uiScorchTimer -= uiDiff;
-
 
         if (m_uiBlastWaveTimer < uiDiff)
         {
@@ -376,17 +406,6 @@ struct MANGOS_DLL_DECL npc_silvermoon_harryAI : public ScriptedAI
             m_uiBlastWaveTimer -= uiDiff;
 
         DoMeleeAttackIfReady();
-
-    }
-
-    void SetBeaten(bool bBeaten)
-    {
-        m_bHarryBeaten = bBeaten;
-    }
-
-    bool IsBeaten()
-    {
-        return m_bHarryBeaten;
     }
 };
 
@@ -397,24 +416,21 @@ CreatureAI* GetAI_npc_silvermoon_harry(Creature* pCreature)
 
 bool GossipHello_npc_silvermoon_harry(Player* pPlayer, Creature* pCreature)
 {
-    bool bHarryBeaten = false;
-
     if (pCreature->isQuestGiver())
         pPlayer->PrepareQuestMenu(pCreature->GetGUID());
+
     if (pCreature->isVendor())
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_TEXT_BROWSE_GOODS, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_TRADE);
 
-    if (npc_silvermoon_harryAI* pHarryAI = dynamic_cast<npc_silvermoon_harryAI*>(pCreature->AI()))
-    {
-        bHarryBeaten = pHarryAI->IsBeaten();
-    }
-
     if (pPlayer->GetQuestStatus(QUEST_GAMBLING_DEBT) == QUEST_STATUS_INCOMPLETE)
     {
-        if (!bHarryBeaten)
-            pPlayer->ADD_GOSSIP_ITEM_ID(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GAMBLING_DEBT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
-        else
-            pPlayer->ADD_GOSSIP_ITEM_ID(GOSSIP_ICON_CHAT, GOSSIP_ITEM_PAYING, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+        if (npc_silvermoon_harryAI* pHarryAI = dynamic_cast<npc_silvermoon_harryAI*>(pCreature->AI()))
+        {
+            if (!pHarryAI->IsBeaten())
+                pPlayer->ADD_GOSSIP_ITEM_ID(GOSSIP_ICON_CHAT, GOSSIP_ITEM_GAMBLING_DEBT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+            else
+                pPlayer->ADD_GOSSIP_ITEM_ID(GOSSIP_ICON_CHAT, GOSSIP_ITEM_PAYING, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+        }
     }
 
     pPlayer->SEND_GOSSIP_MENU(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
@@ -432,7 +448,7 @@ bool GossipSelect_npc_silvermoon_harry(Player* pPlayer, Creature* pCreature, uin
         case GOSSIP_ACTION_INFO_DEF+1:
             pPlayer->CLOSE_GOSSIP_MENU();
 
-            DoScriptText(SAY_AGRO, pCreature, pPlayer);
+            DoScriptText(SAY_AGGRO, pCreature, pPlayer);
             pCreature->setFaction(FACTION_HOSTILE_SH);
             pCreature->AI()->AttackStart(pPlayer);
             break;
@@ -443,10 +459,7 @@ bool GossipSelect_npc_silvermoon_harry(Player* pPlayer, Creature* pCreature, uin
                 {
                     pPlayer->SendNewItem(pItem, 1, true, false);
                     pPlayer->CLOSE_GOSSIP_MENU();
-                }
-                if (npc_silvermoon_harryAI* pHarryAI = dynamic_cast<npc_silvermoon_harryAI*>(pCreature->AI()))
-                {
-                    pHarryAI->SetBeaten(false);
+                    pCreature->AI()->EnterEvadeMode();
                 }
             }
             break;
@@ -455,38 +468,127 @@ bool GossipSelect_npc_silvermoon_harry(Player* pPlayer, Creature* pCreature, uin
     return true;
 }
 
+/*####################
+## YourInnerTurmoil ##
+####################*/
+
+enum
+{
+	SAY_SUMMON_1			= -2500001,
+	SAY_SUMMON_2			= -2500002,
+	SAY_LOW_HEALTH			= -2500003,
+	SAY_DEATH				= -2500004,
+
+	SPELL_SLOW_FALL			=	50238
+};
+
+struct MANGOS_DLL_DECL npc_your_inner_turmoilAI : public ScriptedAI
+{
+	npc_your_inner_turmoilAI(Creature* pCreature) : ScriptedAI(pCreature)
+	{
+		Reset();
+	}
+
+	bool m_bSaySummon;
+	bool m_bSaySummon2;
+	bool m_bSayLowHealth;
+
+	uint32 m_uiSaySummon2Timer;
+
+	void Reset()
+	{
+		m_bSaySummon = true;
+		m_bSaySummon2 = true;
+		m_bSayLowHealth = true;
+
+		uint32 m_uiSaySummon2Timer = 2000;
+	}
+
+	void JustDied(Unit* pKiller)
+	{
+		DoScriptText(SAY_DEATH, m_creature);
+
+		if(pKiller)
+		{
+			if(pKiller->GetTypeId() == TYPEID_PLAYER)
+				m_creature->CastSpell(pKiller, SPELL_SLOW_FALL, true);
+		}
+	}
+
+	void UpdateAI(const uint32 uiDiff)
+	{
+		if(!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+			return;
+		
+		if(m_bSaySummon)
+		{
+			DoScriptText(SAY_SUMMON_1, m_creature);
+			m_bSaySummon = false;
+		}
+		
+		if(m_bSaySummon2)
+		{
+			if(m_uiSaySummon2Timer < uiDiff)
+			{
+				DoScriptText(SAY_SUMMON_2, m_creature);
+				m_bSaySummon2 = false;
+			}
+			else
+				m_uiSaySummon2Timer -= uiDiff;
+		}
+		
+		if(m_creature->GetHealthPercent() <= 50.0f && m_bSayLowHealth)
+		{
+			DoScriptText(SAY_LOW_HEALTH, m_creature);
+			m_bSayLowHealth = false;
+		}
+
+		DoMeleeAttackIfReady();
+	}
+};
+
+CreatureAI* GetAI_npc_your_inner_turmoil(Creature* pCreature)
+{
+	return new npc_your_inner_turmoilAI(pCreature);
+}
+
 void AddSC_howling_fjord()
 {
-    Script* newscript;
+    Script* pNewScript;
 
-    newscript = new Script;
-    newscript->Name = "npc_daegarn";
-    newscript->GetAI = &GetAI_npc_daegarn;
-    newscript->pQuestAccept = &QuestAccept_npc_daegarn;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_daegarn";
+    pNewScript->GetAI = &GetAI_npc_daegarn;
+    pNewScript->pQuestAccept = &QuestAccept_npc_daegarn;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_deathstalker_razael";
-    newscript->pGossipHello = &GossipHello_npc_deathstalker_razael;
-    newscript->pGossipSelect = &GossipSelect_npc_deathstalker_razael;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_deathstalker_razael";
+    pNewScript->pGossipHello = &GossipHello_npc_deathstalker_razael;
+    pNewScript->pGossipSelect = &GossipSelect_npc_deathstalker_razael;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_dark_ranger_lyana";
-    newscript->pGossipHello = &GossipHello_npc_dark_ranger_lyana;
-    newscript->pGossipSelect = &GossipSelect_npc_dark_ranger_lyana;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_dark_ranger_lyana";
+    pNewScript->pGossipHello = &GossipHello_npc_dark_ranger_lyana;
+    pNewScript->pGossipSelect = &GossipSelect_npc_dark_ranger_lyana;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_mcgoyver";
-    newscript->pGossipHello = &GossipHello_npc_mcgoyver;
-    newscript->pGossipSelect = &GossipSelect_npc_mcgoyver;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_mcgoyver";
+    pNewScript->pGossipHello = &GossipHello_npc_mcgoyver;
+    pNewScript->pGossipSelect = &GossipSelect_npc_mcgoyver;
+    pNewScript->RegisterSelf();
 
-    newscript = new Script;
-    newscript->Name = "npc_silvermoon_harry";
-    newscript->GetAI = &GetAI_npc_silvermoon_harry;
-    newscript->pGossipHello = &GossipHello_npc_silvermoon_harry;
-    newscript->pGossipSelect = &GossipSelect_npc_silvermoon_harry;
-    newscript->RegisterSelf();
+    pNewScript = new Script;
+    pNewScript->Name = "npc_silvermoon_harry";
+    pNewScript->GetAI = &GetAI_npc_silvermoon_harry;
+    pNewScript->pGossipHello = &GossipHello_npc_silvermoon_harry;
+    pNewScript->pGossipSelect = &GossipSelect_npc_silvermoon_harry;
+    pNewScript->RegisterSelf();
+
+	pNewScript = new Script;
+	pNewScript->Name = "npc_your_inner_turmoil";
+	pNewScript->GetAI = &GetAI_npc_your_inner_turmoil;
+	pNewScript->RegisterSelf();
 }

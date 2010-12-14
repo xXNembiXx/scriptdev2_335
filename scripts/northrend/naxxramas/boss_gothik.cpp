@@ -16,8 +16,9 @@
 
 /* ScriptData
 SDName: Boss_Gothik
-SD%Complete: 0
-SDComment: Placeholder
+SDAuthor: ckegg & Nembi
+SD%Complete: 95%
+SDComment: ToDo: Whenever a living mob is slain on the live side its spirit will transfer to the undead side and spawn a corresponding undead mob there.
 SDCategory: Naxxramas
 EndScriptData */
 
@@ -34,36 +35,6 @@ EndScriptData */
 #define SPELL_SHADOWBOLT            29317
 #define H_SPELL_SHADOWBOLT          56405
 
-//Unrelenting Trainee
-#define SPELL_EAGLECLAW             30285
-#define SPELL_KNOCKDOWN_PASSIVE     6961
-
-//Unrelenting Deathknight
-#define SPELL_CHARGE                22120
-#define SPELL_SHADOW_MARK           27825
-
-//Unrelenting Rider
-#define SPELL_UNHOLY_AURA           55606
-#define H_SPELL_UNHOLY_AURA         55608
-#define SPELL_SHADOWBOLT_VOLLEY     27831                   //Search thru targets and find those who have the SHADOW_MARK to cast this on
-#define H_SPELL_SHADOWBOLT_VOLLEY   55638
-
-//Spectral Trainee
-#define SPELL_ARCANE_EXPLOSION      27989
-
-//Spectral Deathknight
-#define SPELL_WHIRLWIND             28334
-#define SPELL_SUNDER_ARMOR          25051                   //cannot find sunder that reduces armor by 2950
-#define SPELL_CLEAVE                20677
-#define SPELL_MANA_BURN             17631
-
-//Spectral Rider
-#define SPELL_LIFEDRAIN             24300
-//USES SAME UNHOLY AURA AS UNRELENTING RIDER
-
-//Spectral Horse
-#define SPELL_STOMP                 27993
-
 #define MOB_LIVE_TRAINEE    16124
 #define MOB_LIVE_KNIGHT     16125
 #define MOB_LIVE_RIDER      16126
@@ -75,33 +46,40 @@ EndScriptData */
 #define POS_LIVE 3
 #define POS_DEAD 5
 
-const struct Waves { uint32 entry, number, time; }
+const struct Waves { uint32 entry, normal_number, heroic_number, time; }
 waves[] =
 {
-    {MOB_LIVE_TRAINEE, 2, 20000},
-    {MOB_LIVE_TRAINEE, 2, 20000},
-    {MOB_LIVE_TRAINEE, 2, 10000},
-    {MOB_LIVE_KNIGHT,  1, 10000}, // 60
-    {MOB_LIVE_TRAINEE, 2, 15000}, 
-    {MOB_LIVE_KNIGHT,  1, 10000},
-    {MOB_LIVE_TRAINEE, 2, 15000},
-    {MOB_LIVE_TRAINEE, 2, 0},
-    {MOB_LIVE_KNIGHT,  1, 10000},
-    {MOB_LIVE_RIDER,   1, 10000}, // 120
-    {MOB_LIVE_TRAINEE, 2, 5000},
-    {MOB_LIVE_KNIGHT,  1, 15000},
-    {MOB_LIVE_TRAINEE, 2, 0},
-    {MOB_LIVE_RIDER,   1, 10000},
-    {MOB_LIVE_KNIGHT,  1, 10000},
-    {MOB_LIVE_TRAINEE, 2, 10000},
-    {MOB_LIVE_RIDER,   1, 5000},
-    {MOB_LIVE_KNIGHT,  1, 5000},  // 180
-    {MOB_LIVE_TRAINEE, 2, 20000},
-    {MOB_LIVE_TRAINEE, 2, 0},
-    {MOB_LIVE_KNIGHT,  1, 0},
-    {MOB_LIVE_RIDER,   1, 15000},
-    {MOB_LIVE_TRAINEE, 2, 29000}, // 244
-    {0, 0, 0},
+    {MOB_LIVE_TRAINEE, 2, 3, 20000}, //1
+    {MOB_LIVE_TRAINEE, 2, 3, 20000}, //2
+    {MOB_LIVE_TRAINEE, 2, 3, 10000}, //3
+    {MOB_LIVE_KNIGHT,  1, 2, 10000}, //4
+    {MOB_LIVE_TRAINEE, 2, 3, 15000}, //5
+    {MOB_LIVE_KNIGHT,  1, 2, 10000}, //6
+    {MOB_LIVE_TRAINEE, 2, 3, 15000}, //7
+    {MOB_LIVE_TRAINEE, 2, 3, 0},	 //8
+    {MOB_LIVE_KNIGHT,  1, 2, 10000}, //8
+    {MOB_LIVE_TRAINEE, 0, 3, 0},     //9
+    {MOB_LIVE_RIDER,   1, 0, 10000}, //9
+    {MOB_LIVE_RIDER,   0, 1, 0},     //10
+    {MOB_LIVE_TRAINEE, 2, 0, 5000},  //10
+    {MOB_LIVE_TRAINEE, 0, 3, 0},     //11
+    {MOB_LIVE_KNIGHT,  1, 0, 15000}, //11
+    {MOB_LIVE_RIDER,   1, 1, 0},     //12
+    {MOB_LIVE_TRAINEE, 2, 0, 10000}, //12
+    {MOB_LIVE_KNIGHT,  2, 2, 10000}, //13
+    {MOB_LIVE_RIDER,   0, 1, 0},     //14
+    {MOB_LIVE_TRAINEE, 2, 0, 10000}, //14
+    {MOB_LIVE_RIDER,   1, 1, 0},     //15
+    {MOB_LIVE_TRAINEE, 0, 3, 5000},  //15
+    {MOB_LIVE_KNIGHT,  1, 1, 0},     //16
+    {MOB_LIVE_TRAINEE, 0, 3, 5000},  //16
+    {MOB_LIVE_RIDER,   0, 1, 0},     //17
+    {MOB_LIVE_TRAINEE, 2, 3, 20000}, //17
+    {MOB_LIVE_RIDER,   1, 1, 0},     //18
+    {MOB_LIVE_KNIGHT,  1, 2, 0},     //18
+    {MOB_LIVE_TRAINEE, 2, 3, 15000}, //18
+    {MOB_LIVE_TRAINEE, 2, 0, 29000}, //19 (only normal)
+    {0, 0, 0, 0}
 };
 
 const float PosSummonLive[POS_LIVE][3] =
@@ -120,13 +98,12 @@ const float PosSummonDead[POS_DEAD][3] =
     {2664.8f, -3340.7f, 268.23f},
 };
 
-const float PosPlatform[4] = {2640.5f, -3360.6f, 285.26f, 0};
 const float PosGroundLive[4] = {2692.174f, -3400.963f, 267.680f, 1.7f};
 const float PosGroundDeath[4] = {2690.378f, -3328.279f, 267.681f, 1.7f};
 
-struct MANGOS_DLL_DECL boss_gothikAI : public Scripted_NoMovementAI
+struct MANGOS_DLL_DECL boss_gothikAI : public ScriptedAI
 {
-    boss_gothikAI(Creature* pCreature) : Scripted_NoMovementAI(pCreature)
+    boss_gothikAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
         m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
@@ -134,52 +111,67 @@ struct MANGOS_DLL_DECL boss_gothikAI : public Scripted_NoMovementAI
     }
 
     ScriptedInstance* m_pInstance;
+
     bool m_bIsRegularMode;
-    bool SummonPhase;
-    bool BlinkPhase;
+    bool m_bIsBlinkPhase;
 
     std::list<uint64> SummonsList;
 
+	uint8  m_uiPhase;
+	uint32 m_uiPhaseTimer;
     uint32 waveCount;
-    uint32 Summon_Timer;
-    uint32 SummonDeathCheck_Timer;
-    uint32 HarvestSoul_Timer;
-    uint32 ShadowBolt_Timer;
-    uint32 Blink_Timer;
+    uint32 m_uiSummonTimer;
+    uint32 m_uiSummonDeathCheckTimer;
+    uint32 m_uiHarvestSoulTimer;
+    uint32 m_uiShadowBoltTimer;
+    uint32 m_uiBlinkTimer;
+    bool   m_bIsGateOpen;
 
     void Reset()
     {
-        SummonPhase = false;
-        BlinkPhase = false;
+    	m_bIsBlinkPhase = false;
+        m_bIsGateOpen = false;
+		m_uiPhase = 1;
+		m_uiPhaseTimer = 274000;
 
-        SummonsList.clear();
+    	SummonsList.clear();
 
         waveCount = 0;
-        Summon_Timer = 10000;
-        SummonDeathCheck_Timer = 1000;
-        HarvestSoul_Timer = 15000;
-        ShadowBolt_Timer = 1000;
-        Blink_Timer = 30000;
+        m_uiSummonTimer = 25000;
+        m_uiSummonDeathCheckTimer = 1000;
+        m_uiHarvestSoulTimer = 1000;
+        m_uiShadowBoltTimer = 2500;
+        m_uiBlinkTimer = 10000;
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+        SetCombatMovement(false);
 
         if (m_pInstance)
-            m_pInstance->SetData(TYPE_GOTHIK, NOT_STARTED);
+        {
+            if (GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_MILI_GOTH_COMBAT_GATE)))
+                pGate->SetGoState(GO_STATE_ACTIVE);
+
+        }
     }
 
-    void EnterCombat(Unit *who)
+    void JustReachedHome()
+    {
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_GOTHIK, FAIL);
+    }
+
+    void Aggro(Unit *who)
     {
         DoScriptText(SAY_SPEECH, m_creature);
 
         m_creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-        m_creature->GetMap()->CreatureRelocation(m_creature, PosPlatform[0], PosPlatform[1], PosPlatform[2], PosPlatform[3]);
         m_creature->SetInCombatWithZone();
 
         if (m_pInstance)
         {
             m_pInstance->SetData(TYPE_GOTHIK, IN_PROGRESS);
 
-            if (GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GOTHIK_GATE)))
+            if (GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_MILI_GOTH_COMBAT_GATE)))
                 pGate->SetGoState(GO_STATE_READY);
         }
     }
@@ -200,103 +192,117 @@ struct MANGOS_DLL_DECL boss_gothikAI : public Scripted_NoMovementAI
 
     void JustSummoned(Creature* pSummon)
     {
-        pSummon->AI()->AttackStart(m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM,0));
+        if (Unit* pTarget = m_creature->SelectAttackingTarget(ATTACKING_TARGET_RANDOM, 0))
+            pSummon->AI()->AttackStart(pTarget);
     }
 
-    void UpdateAI(const uint32 diff)
+    void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
-        if (SummonPhase)
+		if (m_uiPhase == 1)
         {
-            if (HarvestSoul_Timer < diff)
-            {
-                DoCast(m_creature, SPELL_HARVESTSOUL);
-                HarvestSoul_Timer = 15000 + rand()%1000;
-            }else HarvestSoul_Timer -= diff;
-
-            if (ShadowBolt_Timer < diff)
-            {
-                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOWBOLT : H_SPELL_SHADOWBOLT);
-                ShadowBolt_Timer = 1000 + rand()%500;
-            }else ShadowBolt_Timer -= diff;
-
-            if (Blink_Timer < diff)
-            {
-                if (BlinkPhase)
-                {
-                    m_creature->GetMap()->CreatureRelocation(m_creature, PosGroundLive[0], PosGroundLive[1], PosGroundLive[2], 0.0f);
-                    BlinkPhase = false;
-                }
-                else
-                {
-                    m_creature->GetMap()->CreatureRelocation(m_creature, PosGroundDeath[0], PosGroundDeath[1], PosGroundDeath[2], 0.0f);
-                    BlinkPhase = true;
-                }
-                DoResetThreat();
-                Blink_Timer = 15000;
-            }else Blink_Timer -= diff;
-        }
-        else
-        {
-            if (Summon_Timer < diff)
+            if (m_uiSummonTimer < uiDiff)
             {
                 if(waves[waveCount].entry)
                 {
-                    for(uint32 i = 0; i < waves[waveCount].number; ++i)
+                    for(uint32 i = 0; i < (m_bIsRegularMode ? waves[waveCount].normal_number : waves[waveCount].heroic_number); ++i)
                     {
                         uint8 SummonLoc = rand()%POS_LIVE;
                         if (Creature* pTemp = m_creature->SummonCreature(waves[waveCount].entry, PosSummonLive[SummonLoc][0], PosSummonLive[SummonLoc][1], PosSummonLive[SummonLoc][2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
-                            SummonsList.push_back(pTemp->GetGUID());
+							SummonsList.push_back(pTemp->GetGUID());
                     }
-                    Summon_Timer = waves[waveCount].time;
+                    m_uiSummonTimer = waves[waveCount].time;
                     ++waveCount;
                 }
-                else
-                {
-                    DoScriptText(SAY_TELEPORT, m_creature);
-                    uint8 SummonLoc = rand()%POS_LIVE;
-                    m_creature->GetMap()->CreatureRelocation(m_creature, PosSummonLive[SummonLoc][0], PosSummonLive[SummonLoc][1], PosSummonLive[SummonLoc][2], 0.0f);
-                    m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+            }else m_uiSummonTimer -= uiDiff;
 
-                    SummonPhase = true;
-                }
-            }else Summon_Timer -= diff;
-        }
+			if (m_uiSummonDeathCheckTimer < uiDiff)
+			{
+				if (!SummonsList.empty())
+					for (std::list<uint64>::iterator itr = SummonsList.begin(); itr != SummonsList.end(); ++itr)
+						if (Creature* pTemp = m_creature->GetMap()->GetCreature(*itr))
+							if (pTemp->isDead())
+							{
+								uint8 SummonLoc = rand()%POS_DEAD;
+								uint64 UndeadEntry = 0;
+								switch (pTemp->GetEntry())
+								{
+									case MOB_LIVE_TRAINEE: UndeadEntry = MOB_DEAD_TRAINEE; break;
+									case MOB_LIVE_KNIGHT:  UndeadEntry = MOB_DEAD_KNIGHT; break;
+									case MOB_LIVE_RIDER:
+									{
+										UndeadEntry = MOB_DEAD_RIDER;
+										m_creature->SummonCreature(MOB_DEAD_HORSE, PosSummonDead[SummonLoc][0], PosSummonDead[SummonLoc][1], PosSummonDead[SummonLoc][2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+										break;
+									}
+								}
+								m_creature->SummonCreature(UndeadEntry, PosSummonDead[SummonLoc][0], PosSummonDead[SummonLoc][1], PosSummonDead[SummonLoc][2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
+								SummonsList.remove(pTemp->GetGUID());
+								break;
+							}
 
-        if (SummonDeathCheck_Timer < diff)
-        {
-            if (!SummonsList.empty())
+				m_uiSummonDeathCheckTimer = 1000;
+			}else m_uiSummonDeathCheckTimer -= uiDiff;
+
+			if (m_uiPhaseTimer < uiDiff)
             {
-                for(std::list<uint64>::iterator itr = SummonsList.begin(); itr != SummonsList.end(); ++itr)
-                {
-                    if (Creature* pTemp = m_creature->GetMap()->GetCreature(*itr))
-                    {
-                        if (!pTemp->isAlive())
-                        {
-                            uint8 SummonLoc = rand()%POS_DEAD;
-                            if (pTemp->GetEntry() == MOB_LIVE_TRAINEE)
-                                m_creature->SummonCreature(MOB_DEAD_TRAINEE, PosSummonDead[SummonLoc][0], PosSummonDead[SummonLoc][1], PosSummonDead[SummonLoc][2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
-                            else if (pTemp->GetEntry() == MOB_LIVE_KNIGHT)
-                                m_creature->SummonCreature(MOB_DEAD_KNIGHT, PosSummonDead[SummonLoc][0], PosSummonDead[SummonLoc][1], PosSummonDead[SummonLoc][2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
-                            else if (pTemp->GetEntry() == MOB_LIVE_RIDER)
-                            {
-                                m_creature->SummonCreature(MOB_DEAD_RIDER, PosSummonDead[SummonLoc][0], PosSummonDead[SummonLoc][1], PosSummonDead[SummonLoc][2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
-                                m_creature->SummonCreature(MOB_DEAD_HORSE, PosSummonDead[SummonLoc][0], PosSummonDead[SummonLoc][1], PosSummonDead[SummonLoc][2], 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000);
-                            }
+				m_uiPhase = 2;
+				DoScriptText(SAY_TELEPORT, m_creature);
+				m_creature->GetMap()->CreatureRelocation(m_creature, PosGroundLive[0], PosGroundLive[1], PosGroundLive[2], PosGroundLive[3]);
+				m_creature->SendMonsterMove(PosGroundLive[0], PosGroundLive[1], PosGroundLive[2], SPLINETYPE_NORMAL, SPLINEFLAG_DONE, 0);
+				m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
 
-                            if (m_pInstance)
-                                if (GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(DATA_GOTHIK_GATE)))
-                                    pGate->SetGoState(GO_STATE_ACTIVE);
-                            SummonsList.remove(pTemp->GetGUID());
-                            break;
-                        }
-                    }
-                }
-            }
-            SummonDeathCheck_Timer = 1000;
-        }else SummonDeathCheck_Timer -= diff;
+				m_uiPhaseTimer = 0;
+            } else m_uiPhaseTimer -= uiDiff;
+
+		}
+
+        if (m_uiPhase == 2)
+        {
+            if (m_uiHarvestSoulTimer < uiDiff)
+            {
+                DoCast(m_creature->getVictim(), SPELL_HARVESTSOUL);
+                m_uiHarvestSoulTimer = 15000;
+			}else m_uiHarvestSoulTimer -= uiDiff;
+
+            if (m_uiShadowBoltTimer < uiDiff)
+            {
+                DoCast(m_creature->getVictim(), m_bIsRegularMode ? SPELL_SHADOWBOLT : H_SPELL_SHADOWBOLT);
+                m_uiShadowBoltTimer = 2500;
+            }else m_uiShadowBoltTimer -= uiDiff;
+
+			if (!m_bIsGateOpen)
+			{
+				if (m_uiBlinkTimer < uiDiff)
+				{
+					if (m_bIsBlinkPhase)
+					{
+						m_creature->GetMap()->CreatureRelocation(m_creature, PosGroundLive[0], PosGroundLive[1], PosGroundLive[2], 0.0f);
+						m_creature->SendMonsterMove(PosGroundLive[0], PosGroundLive[1], PosGroundLive[2], SPLINETYPE_NORMAL, SPLINEFLAG_DONE, 0);
+						m_bIsBlinkPhase = false;
+					}
+					else
+					{
+						m_creature->GetMap()->CreatureRelocation(m_creature, PosGroundDeath[0], PosGroundDeath[1], PosGroundDeath[2], 0.0f);
+						m_creature->SendMonsterMove(PosGroundDeath[0], PosGroundDeath[1], PosGroundDeath[2], SPLINETYPE_NORMAL, SPLINEFLAG_DONE, 0);
+						m_bIsBlinkPhase = true;
+					}
+					DoResetThreat();
+					m_uiBlinkTimer = 15000;
+				}else m_uiBlinkTimer -= uiDiff;
+
+				if ((m_creature->GetHealth()*100 < m_creature->GetMaxHealth()*30) && m_pInstance)
+				{
+					if (GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_MILI_GOTH_COMBAT_GATE)))
+					{
+						pGate->SetGoState(GO_STATE_ACTIVE);
+						m_bIsGateOpen = true;
+					}
+				}
+			}
+        }
     }
 };
 
@@ -313,5 +319,3 @@ void AddSC_boss_gothik()
     newscript->GetAI = &GetAI_boss_gothik;
     newscript->RegisterSelf();
 }
-
-

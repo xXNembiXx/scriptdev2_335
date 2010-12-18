@@ -74,14 +74,26 @@ instance_naxxramas::instance_naxxramas(Map* pMap) : ScriptedInstance(pMap),
     m_uiKelthuzadDoorGUID(0),
     m_fChamberCenterX(0.0f),
     m_fChamberCenterY(0.0f),
-    m_fChamberCenterZ(0.0f)
+    m_fChamberCenterZ(0.0f),
+
+    m_uiLane1GUID(0),
+    m_uiLane2GUID(0),
+    m_uiLane3GUID(0)
 {
     Initialize();
 }
 
+    uint32 m_uiLane1Timer;
+    uint32 m_uiLane2Timer;
+    uint32 m_uiLane3Timer;
+
 void instance_naxxramas::Initialize()
 {
     memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
+
+    m_uiLane1Timer = 1000;
+    m_uiLane2Timer = 2500;
+    m_uiLane3Timer = 4000;
 }
 
 void instance_naxxramas::OnCreatureCreate(Creature* pCreature)
@@ -99,6 +111,9 @@ void instance_naxxramas::OnCreatureCreate(Creature* pCreature)
         case NPC_RIVENDARE:         m_uiRivendareGUID = pCreature->GetGUID();   break;
         case NPC_GOTHIK:            m_uiGothikGUID = pCreature->GetGUID();      break;
         case NPC_SUB_BOSS_TRIGGER:  m_lGothTriggerList.push_back(pCreature->GetGUID()); break;
+        case NPC_LANE1:				m_uiLane1GUID = pCreature->GetGUID();      break;
+        case NPC_LANE2:				m_uiLane2GUID = pCreature->GetGUID();      break;
+        case NPC_LANE3:				m_uiLane3GUID = pCreature->GetGUID();      break;
     }
 }
 
@@ -130,7 +145,6 @@ void instance_naxxramas::OnObjectCreate(GameObject* pGo)
             if (m_auiEncounter[1] == DONE)
                 pGo->SetGoState(GO_STATE_ACTIVE);
             break;
-
         case GO_PLAG_NOTH_ENTRY_DOOR:
             m_uiNothEntryDoorGUID = pGo->GetGUID();
             break;
@@ -270,21 +284,21 @@ void instance_naxxramas::SetData(uint32 uiType, uint32 uiData)
                 DoRespawnGameObject(m_uiAracPortalGUID, 30*MINUTE);
             }
             break;
-        case TYPE_NOTH:
-            m_auiEncounter[3] = uiData;
-            DoUseDoorOrButton(m_uiNothEntryDoorGUID);
-            if (uiData == DONE)
-            {
-                DoUseDoorOrButton(m_uiNothExitDoorGUID);
+            case TYPE_NOTH:
+                m_auiEncounter[3] = uiData;
+                DoUseDoorOrButton(m_uiNothEntryDoorGUID);
+                if (uiData == DONE)
+                {
+                     DoUseDoorOrButton(m_uiNothExitDoorGUID);
+                     DoUseDoorOrButton(m_uiHeigEntryDoorGUID);
+                }
+                break;
+            case TYPE_HEIGAN:
+                m_auiEncounter[4] = uiData;
                 DoUseDoorOrButton(m_uiHeigEntryDoorGUID);
-            }
-            break;
-        case TYPE_HEIGAN:
-            m_auiEncounter[4] = uiData;
-            DoUseDoorOrButton(m_uiHeigEntryDoorGUID);
-            if (uiData == DONE)
-                DoUseDoorOrButton(m_uiHeigExitDoorGUID);
-            break;
+                if (uiData == DONE)
+                     DoUseDoorOrButton(m_uiHeigExitDoorGUID);
+                break;
         case TYPE_LOATHEB:
             m_auiEncounter[5] = uiData;
             DoUseDoorOrButton(m_uiLoathebDoorGUID);
@@ -296,10 +310,10 @@ void instance_naxxramas::SetData(uint32 uiType, uint32 uiData)
             break;
         case TYPE_RAZUVIOUS:
             m_auiEncounter[6] = uiData;
-			if (uiData == DONE)
-			{
-				DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
-			}
+            if (uiData == DONE)
+            {
+                DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
+            }
             break;
         case TYPE_GOTHIK:
             switch(uiData)
@@ -433,7 +447,7 @@ void instance_naxxramas::Load(const char* chrIn)
     loadStream >> m_auiEncounter[0] >> m_auiEncounter[1] >> m_auiEncounter[2] >> m_auiEncounter[3]
         >> m_auiEncounter[4] >> m_auiEncounter[5] >> m_auiEncounter[6] >> m_auiEncounter[7]
         >> m_auiEncounter[8] >> m_auiEncounter[9] >> m_auiEncounter[10] >> m_auiEncounter[11]
-        >> m_auiEncounter[12] >> m_auiEncounter[13] >> m_auiEncounter[14];
+		>> m_auiEncounter[12] >> m_auiEncounter[13] >> m_auiEncounter[14];
 
     for(uint8 i = 0; i < MAX_ENCOUNTER; ++i)
     {
@@ -508,10 +522,44 @@ uint64 instance_naxxramas::GetData64(uint32 uiData)
             return m_uiFeugenGUID;
         case NPC_GOTHIK:
             return m_uiGothikGUID;
+        case DATA_LANE1:
+            return m_uiLane1GUID;
+        case DATA_LANE2:
+            return m_uiLane2GUID;
+        case DATA_LANE3:
+            return m_uiLane3GUID;
     }
     return 0;
 }
 
+
+void instance_naxxramas::Update(uint32 uiDiff)
+{
+    if (m_uiLane1Timer < uiDiff)
+    {
+        if(Creature* pTrigger = instance->GetCreature(GetData64(DATA_LANE1)))
+            if (Creature* pTemp = pTrigger->SummonCreature(NPC_POISEN, 3183.495779f, -3143.447998f, 294.062897f, 3.981270f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 9000))
+				pTemp->MonsterMove(3165.249023f, -3166.019043f, 294.063446f, 9000);
+        m_uiLane1Timer = 4000;
+    }else m_uiLane1Timer -= uiDiff; 
+
+    if (m_uiLane2Timer < uiDiff)
+    {
+        if(Creature* pTrigger = instance->GetCreature(GetData64(DATA_LANE2)))
+            if (Creature* pTemp = pTrigger->SummonCreature(NPC_POISEN, 3174.359619f, -3137.360840f, 294.062897f, 4.044f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 9000))
+				pTemp->MonsterMove(3155.766113f, -3158.337158f, 294.062897f, 9000);
+        m_uiLane2Timer = 4000;
+    }else m_uiLane2Timer -= uiDiff; 
+
+    if (m_uiLane3Timer < uiDiff)
+    {
+        if(Creature* pTrigger = instance->GetCreature(GetData64(DATA_LANE3)))
+            if (Creature* pTemp = pTrigger->SummonCreature(NPC_POISEN, 3192.833740f, -3151.343506f, 294.003479f, 4.044f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 9000))
+				pTemp->MonsterMove(3173.857178f, -3173.015625f, 294.063354f, 9000);
+        m_uiLane3Timer = 4000;
+    }else m_uiLane3Timer -= uiDiff;
+}
+    
 void instance_naxxramas::SetGothTriggers()
 {
     Creature* pGoth = instance->GetCreature(m_uiGothikGUID);

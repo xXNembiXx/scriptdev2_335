@@ -16,8 +16,9 @@
 
 /* ScriptData
 SDName: Boss_Patchwerk
+SD Author: Nembi
 SD%Complete: 80
-SDComment: TODO: confirm how hateful strike work
+SDComment: Include Frogger!
 SDCategory: Naxxramas
 EndScriptData */
 
@@ -26,6 +27,9 @@ EndScriptData */
 
 enum
 {
+    ACHIEV_MAKE_QUICK	  = 1856,
+    H_ACHIEV_MAKE_QUICK	  = 1857,
+
     SAY_AGGRO1            = -1533017,
     SAY_AGGRO2            = -1533018,
     SAY_SLAY              = -1533019,
@@ -61,6 +65,9 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
     bool   m_bEnraged;
     bool   m_bBerserk;
 
+    bool   m_bIsInTime;
+    uint32 m_uiAchievTimer;
+
     void Reset()
     {
         m_uiHatefulStrikeTimer = 1000;                      //1 second
@@ -68,6 +75,9 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
         m_uiSlimeboltTimer = 10000;
         m_bEnraged = false;
         m_bBerserk = false;
+
+        m_bIsInTime = true;
+        m_uiAchievTimer = 180000;
     }
 
     void JustReachedHome()
@@ -90,6 +100,21 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_PATCHWERK, DONE);
+
+        if (m_bIsInTime)
+        {
+            AchievementEntry const *AchievMakeQuick = GetAchievementStore()->LookupEntry(m_bIsRegularMode ? ACHIEV_MAKE_QUICK : H_ACHIEV_MAKE_QUICK);
+            if (AchievMakeQuick)
+            {
+                Map* pMap = m_creature->GetMap();
+                if (pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->CompletedAchievement(AchievMakeQuick);
+                }
+            }
+        }
     }
 
     void Aggro(Unit* pWho)
@@ -98,6 +123,8 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
 
         if (m_pInstance)
             m_pInstance->SetData(TYPE_PATCHWERK, IN_PROGRESS);
+
+		m_creature->CallForHelp(50.0f);
     }
 
     void DoHatefulStrike()
@@ -133,6 +160,12 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
+
+        if (m_uiAchievTimer < uiDiff)
+        {
+            m_bIsInTime = false;
+            m_uiAchievTimer = 0;
+        }else  m_uiAchievTimer -= uiDiff;
 
         // Hateful Strike
         if (m_uiHatefulStrikeTimer < uiDiff)
@@ -182,9 +215,49 @@ struct MANGOS_DLL_DECL boss_patchwerkAI : public ScriptedAI
     }
 };
 
+/* ************* *
+ * Living Poisen *
+ * ************* */
+
+#define SPELL_DEATH		5
+
+
+struct MANGOS_DLL_DECL naxx_mob_poisenAI : public ScriptedAI
+{
+    naxx_mob_poisenAI(Creature* pCreature) : ScriptedAI(pCreature) {Reset();}
+
+    void Reset(){}
+
+    void MoveInLineOfSight(Unit *pWho) 
+    {
+        if(!pWho)
+            return;
+
+        if(m_creature->IsWithinDistInMap(pWho, 2.0f))
+        {
+            if(pWho->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            pWho->CastSpell(pWho,SPELL_DEATH, true);
+            m_creature->ForcedDespawn();
+       }
+    }
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+    }
+};
+
 CreatureAI* GetAI_boss_patchwerk(Creature* pCreature)
 {
     return new boss_patchwerkAI(pCreature);
+}
+
+CreatureAI* GetAI_naxx_mob_poisen(Creature* pCreature)
+{
+    return new naxx_mob_poisenAI(pCreature);
 }
 
 void AddSC_boss_patchwerk()
@@ -193,5 +266,10 @@ void AddSC_boss_patchwerk()
     NewScript = new Script;
     NewScript->Name = "boss_patchwerk";
     NewScript->GetAI = &GetAI_boss_patchwerk;
+    NewScript->RegisterSelf();
+
+    NewScript = new Script;
+    NewScript->Name = "naxx_mob_poisen";
+    NewScript->GetAI = &GetAI_naxx_mob_poisen;
     NewScript->RegisterSelf();
 }

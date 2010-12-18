@@ -5,6 +5,7 @@
 #ifndef DEF_NAXXRAMAS_H
 #define DEF_NAXXRAMAS_H
 
+
 enum
 {
     MAX_ENCOUNTER               = 15,
@@ -31,6 +32,10 @@ enum
     TYPE_SAPPHIRON              = 16,
     TYPE_KELTHUZAD              = 17,
 
+	DATA_LANE1					= 30,
+	DATA_LANE2					= 31,
+	DATA_LANE3					= 32,
+
     NPC_ANUB_REKHAN             = 15956,
     NPC_FAERLINA                = 15953,
 
@@ -53,6 +58,12 @@ enum
     NPC_SPECT_DEATH_KNIGTH      = 16148,
     NPC_SPECT_RIDER             = 16150,
     NPC_SPECT_HORSE             = 16149,
+
+	//After Patchwerk
+	NPC_POISEN					= 16027,
+	NPC_LANE1					= 500001,
+	NPC_LANE2					= 500002,
+	NPC_LANE3					= 500003,
 
     // End boss adds
     NPC_SOLDIER_FROZEN          = 16427,
@@ -116,19 +127,24 @@ struct GothTrigger
     bool bIsRightSide;
     bool bIsAnchorHigh;
 };
+	
 
 class MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 {
     public:
-        instance_naxxramas(Map* pMap);
-        ~instance_naxxramas() {}
 
+
+        instance_naxxramas(Map* pMap);
+        ~instance_naxxramas() 
+		{
+		}
         void Initialize();
 
         bool IsEncounterInProgress() const;
 
         void OnCreatureCreate(Creature* pCreature);
         void OnObjectCreate(GameObject* pGo);
+		void Update(uint32 uiDiff);
 
         void SetData(uint32 uiType, uint32 uiData);
         uint32 GetData(uint32 uiType);
@@ -204,6 +220,10 @@ class MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
         float m_fChamberCenterX;
         float m_fChamberCenterY;
         float m_fChamberCenterZ;
+
+		uint64 m_uiLane1GUID;
+		uint64 m_uiLane2GUID;
+		uint64 m_uiLane3GUID;
 };
 
 #endif

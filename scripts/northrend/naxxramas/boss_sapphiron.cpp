@@ -16,13 +16,95 @@
 
 /* ScriptData
 SDName: Boss_Sapphiron
-SD%Complete: 0
-SDComment: Place Holder
+SD%Complete: 95
+SDComment: Include Sapp Birth
 SDCategory: Naxxramas
 EndScriptData */
 
 #include "precompiled.h"
 #include "naxxramas.h"
+
+
+/* ************* *
+ * Trigger_Birth *
+ * ************* */
+
+
+struct MANGOS_DLL_DECL naxx_trigger_sapphironAI : public ScriptedAI
+{
+    naxx_trigger_sapphironAI(Creature* pCreature) : ScriptedAI(pCreature)
+    {
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        Reset();
+    }
+
+	ScriptedInstance* m_pInstance;
+	uint32 m_uiEndTimer;
+
+	void Reset()
+	{
+		m_uiEndTimer = 18000;
+		
+		if(m_pInstance->GetData(TYPE_SAPP_BIRTH) == NOT_STARTED)
+		{
+			if(Creature* pSapp = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_SAPP)))
+				pSapp->SetPhaseMask(128, true);
+			if (GameObject* pGo = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_DATA_SAPP)))
+				pGo->SetPhaseMask(1, true);
+		}
+
+		if(m_pInstance->GetData(TYPE_SAPP_BIRTH) == DONE)
+		{
+			if(Creature* pSapp = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_SAPP)))
+				pSapp->SetPhaseMask(1, true);
+			if (GameObject* pGo = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_DATA_SAPP)))
+				pGo->SetPhaseMask(128, true);
+		}
+
+	}
+
+	void MoveInLineOfSight(Unit* pWho)
+    {
+        if(!pWho)
+            return;
+
+        if(m_pInstance->GetData(TYPE_SAPP_BIRTH) == NOT_STARTED)
+        {
+            if(pWho->GetTypeId() != TYPEID_PLAYER)
+                return;
+
+            if(pWho->IsWithinDistInMap(m_creature, 700.0f))
+            {
+                m_pInstance->SetData(TYPE_SAPP_BIRTH, IN_PROGRESS);
+            }
+        }
+	}
+
+    void UpdateAI(uint32 const uiDiff)
+    {
+		if(m_pInstance->GetData(TYPE_SAPP_BIRTH) == IN_PROGRESS)
+		{
+			if (!m_creature->isInCombat() && m_creature->isAlive())
+			{
+				if (m_uiEndTimer < uiDiff)
+				{
+					if(Creature* pSapp = m_creature->GetCreature(*m_creature, m_pInstance->GetData64(DATA_SAPP)))
+						pSapp->SetPhaseMask(1, true);
+					if (GameObject* pGo = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_DATA_SAPP)))
+						pGo->SetPhaseMask(128, true);
+					m_pInstance->SetData(TYPE_SAPP_BIRTH, DONE);
+					m_creature->ForcedDespawn();
+
+					m_uiEndTimer = 0;
+				}else m_uiEndTimer -= uiDiff;
+			}
+		}
+        if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
+            return;
+    }
+};
+
+
 
 enum
 {
@@ -411,11 +493,21 @@ CreatureAI* GetAI_boss_sapphiron(Creature* pCreature)
     return new boss_sapphironAI(pCreature);
 }
 
+CreatureAI* GetAI_naxx_trigger_sapphiron(Creature* pCreature)
+{
+    return new naxx_trigger_sapphironAI(pCreature);
+}
+
 void AddSC_boss_sapphiron()
 {
     Script* NewScript;
     NewScript = new Script;
     NewScript->Name = "boss_sapphiron";
     NewScript->GetAI = &GetAI_boss_sapphiron;
+    NewScript->RegisterSelf();
+
+    NewScript = new Script;
+    NewScript->Name = "naxx_trigger_sapphiron";
+    NewScript->GetAI = &GetAI_naxx_trigger_sapphiron;
     NewScript->RegisterSelf();
 }

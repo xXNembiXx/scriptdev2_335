@@ -24,36 +24,43 @@ EndScriptData */
 #include "precompiled.h"
 #include "naxxramas.h"
 
-#define SAY_AGGRO1          -1533109
-#define SAY_AGGRO2          -1533110
-#define SAY_AGGRO3          -1533111
-#define SAY_SLAY            -1533112
-#define SAY_TAUNT1          -1533113
-#define SAY_TAUNT2          -1533114
-#define SAY_TAUNT3          -1533115
-#define SAY_TAUNT4          -1533116
-#define SAY_TAUNT5          -1533117
-#define SAY_DEATH           -1533118
+#define NAXXRAMAS				533
+
+#define ACHIEV_SAFETY_DANCE		1996
+#define H_ACHIEV_SAFETY_DANCE	2139
+
+#define SAY_AGGRO1				-1533109
+#define SAY_AGGRO2				-1533110
+#define SAY_AGGRO3				-1533111
+#define SAY_SLAY				-1533112
+#define SAY_TAUNT1				-1533113
+#define SAY_TAUNT2				-1533114
+#define SAY_TAUNT3				-1533115
+#define SAY_TAUNT4				-1533116
+#define SAY_TAUNT5				-1533117
+#define SAY_DEATH				-1533118
 
 //Spell used by floor peices to cause damage to players
-#define SPELL_ERUPTION      29371
+#define SPELL_ERUPTION			29371
 
 //Spells by boss
-#define SPELL_DISRUPTION    29310
-#define SPELL_FEAVER        29998
-#define H_SPELL_FEAVER      55011
-#define SPELL_PLAGUED_CLOUD 29350
+#define SPELL_DISRUPTION		29310
+#define SPELL_FEAVER			29998
+#define H_SPELL_FEAVER			55011
+#define SPELL_PLAGUED_CLOUD		29350
 
-#define PLATFORM_X 2793.86f
-#define PLATFORM_Y -3707.38f
-#define PLATFORM_Z 276.627f
-#define PLATFORM_O 0.593f
+#define PLATFORM_X				2793.86f
+#define PLATFORM_Y				-3707.38f
+#define PLATFORM_Z				276.627f
+#define PLATFORM_O				0.593f
+
+
 
 struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
 {
     boss_heiganAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-       m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+        m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
         m_bIsRegularMode = pCreature->GetMap()->IsRegularDifficulty();
         Reset();
     }
@@ -71,10 +78,14 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     uint32 Phase_Timer;
 
     uint32 m_uiSafeSection;
-    bool m_bEruptDirection;
+    bool   m_bEruptDirection;
 
-    bool m_bCombatPhase;
-    bool m_bDelay;
+    bool   m_bCombatPhase;
+    bool   m_bDelay;
+	bool   m_bIsOpenGate;
+
+	uint32 m_uiDeathCheckTimer;
+	bool   m_bIsPlayerDeath;
 
     void Reset()
     {
@@ -88,6 +99,31 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
         m_bCombatPhase = true;
         m_bDelay = false;
         SetCombatMovement(true);
+		m_bIsOpenGate = false;
+
+		m_uiDeathCheckTimer = 1000;
+		m_bIsPlayerDeath = false;
+
+        if(m_pInstance)
+		{
+            m_pInstance->SetData(TYPE_HEIGAN, NOT_STARTED);
+
+            if (GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_PLAG_HEIG_ENTRY_DOOR)))
+                pGate->SetGoState(GO_STATE_ACTIVE);
+		}
+    }
+
+    void MoveInLineOfSight(Unit *pWho) 
+    {
+        if(!pWho)
+            return;
+
+        if(!m_bIsOpenGate && (m_creature->IsWithinDistInMap(pWho, 100.0f)))
+        {
+            if (GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_PLAG_HEIG_ENTRY_DOOR)))
+                pGate->SetGoState(GO_STATE_ACTIVE);
+        }
+        m_bIsOpenGate = true;
     }
 
     void JustReachedHome()
@@ -160,7 +196,7 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
             case 2: DoScriptText(SAY_AGGRO3, m_creature); break;
         }
 
-        // Teleport "cheaters" to center of room (until LOS with GOs will be implemented)
+        // Teleport "cheaters" to center of room
         Map* map = m_creature->GetMap();
         if (map->IsDungeon())
         {
@@ -168,7 +204,7 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
 
             if (!PlayerList.isEmpty())
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                    i->getSource()->TeleportTo(533, 2769.68f, -3684.61f, 273.66f, 5.5f);
+                    i->getSource()->TeleportTo(NAXXRAMAS, 2804.946f, -3678.315f, 273.666f, 4.385f);
         }
 
         if(m_pInstance)
@@ -185,7 +221,22 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
         DoScriptText(SAY_DEATH, m_creature);
 
         if(m_pInstance)
-            m_pInstance->SetData(TYPE_HEIGAN, DONE);
+			m_pInstance->SetData(TYPE_HEIGAN, DONE);
+
+        if (!m_bIsPlayerDeath)
+        {
+            AchievementEntry const *AchievSafetyDance = GetAchievementStore()->LookupEntry(m_bIsRegularMode ? ACHIEV_SAFETY_DANCE : H_ACHIEV_SAFETY_DANCE);
+            if (AchievSafetyDance)
+            {
+                Map* pMap = m_creature->GetMap();
+                if (pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->CompletedAchievement(AchievSafetyDance);
+                }
+            }
+        }
     }
 
     void UpdateAI(const uint32 diff)
@@ -193,15 +244,30 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())
             return;
 
+        if (m_uiDeathCheckTimer < diff)
+        {
+			Map* pMap = m_creature->GetMap();
+			if(pMap)
+			{
+				Map::PlayerList const &lPlayers = pMap->GetPlayers();
+				for (Map::PlayerList::const_iterator iter = lPlayers.begin(); iter != lPlayers.end(); ++iter)
+				{
+					Player* pPlayer = iter->getSource();
+
+					if(!pPlayer->isAlive())
+						m_bIsPlayerDeath = true;
+				}
+			}
+            m_uiDeathCheckTimer = 1000;
+        }else m_uiDeathCheckTimer -= diff;
+
         if (m_uiEvadeCheckCooldown < diff)
         {
             if (m_creature->GetDistance2d(2769.68f, -3684.61f) > 48.0f)
                 EnterEvadeMode();
 
             m_uiEvadeCheckCooldown = 2000;
-        }
-        else
-            m_uiEvadeCheckCooldown -= diff;
+        }else m_uiEvadeCheckCooldown -= diff;
 
         if (m_bDelay)
         {

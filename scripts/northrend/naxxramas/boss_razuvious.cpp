@@ -146,6 +146,7 @@ struct MANGOS_DLL_DECL boss_razuviousAI : public ScriptedAI
         DoCast(m_creature, SPELL_HOPELESS, true);
     }
 
+
     void UpdateAI(const uint32 uiDiff)
     {
         if (!m_creature->SelectHostileTarget() || !m_creature->getVictim())

@@ -80,6 +80,8 @@ struct MANGOS_DLL_DECL boss_grobbulusAI : public ScriptedAI
     {
         if (m_pInstance)
             m_pInstance->SetData(TYPE_GROBBULUS, IN_PROGRESS);
+
+		m_creature->CallForHelp(50.0f);
     }
 
     void SpellHitTarget(Unit *target, const SpellEntry *spell)

@@ -145,13 +145,6 @@ struct MANGOS_DLL_DECL boss_gothikAI : public ScriptedAI
 
         m_creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         SetCombatMovement(false);
-
-        if (m_pInstance)
-        {
-            if (GameObject* pGate = m_pInstance->instance->GetGameObject(m_pInstance->GetData64(GO_MILI_GOTH_COMBAT_GATE)))
-                pGate->SetGoState(GO_STATE_ACTIVE);
-
-        }
     }
 
     void JustReachedHome()

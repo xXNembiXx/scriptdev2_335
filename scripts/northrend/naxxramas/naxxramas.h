@@ -8,7 +8,7 @@
 
 enum
 {
-    MAX_ENCOUNTER               = 15,
+    MAX_ENCOUNTER               = 16,
 
     TYPE_ANUB_REKHAN            = 1,
     TYPE_FAERLINA               = 2,
@@ -32,9 +32,13 @@ enum
     TYPE_SAPPHIRON              = 16,
     TYPE_KELTHUZAD              = 17,
 
+	TYPE_SAPP_BIRTH				= 20,
+
 	DATA_LANE1					= 30,
 	DATA_LANE2					= 31,
 	DATA_LANE3					= 32,
+	DATA_SAPP					= 33,
+	GO_DATA_SAPP				= 34,
 
     NPC_ANUB_REKHAN             = 15956,
     NPC_FAERLINA                = 15953,
@@ -47,6 +51,8 @@ enum
     NPC_THANE                   = 16064,
     NPC_BLAUMEUX                = 16065,
     NPC_RIVENDARE               = 30549,
+
+	NPC_SAPPHIRON				= 15989,
 
     // Gothik
     NPC_GOTHIK                  = 16060,
@@ -104,6 +110,7 @@ enum
 
     // Frostwyrm Lair
     GO_KELTHUZAD_WATERFALL_DOOR = 181225,                   // exit, open after sapphiron is dead
+	GO_SAPP_BIRTH				= 181356,
 
     // Eyes
     GO_ARAC_EYE_RAMP            = 181212,
@@ -126,104 +133,6 @@ struct GothTrigger
 {
     bool bIsRightSide;
     bool bIsAnchorHigh;
-};
-	
-
-class MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
-{
-    public:
-
-
-        instance_naxxramas(Map* pMap);
-        ~instance_naxxramas() 
-		{
-		}
-        void Initialize();
-
-        bool IsEncounterInProgress() const;
-
-        void OnCreatureCreate(Creature* pCreature);
-        void OnObjectCreate(GameObject* pGo);
-		void Update(uint32 uiDiff);
-
-        void SetData(uint32 uiType, uint32 uiData);
-        uint32 GetData(uint32 uiType);
-        uint64 GetData64(uint32 uiData);
-
-        const char* Save() { return strInstData.c_str(); }
-        void Load(const char* chrIn);
-
-        // goth
-        void SetGothTriggers();
-        Creature* GetClosestAnchorForGoth(Creature* pSource, bool bRightSide);
-        void GetGothSummonPointCreatures(std::list<Creature*> &lList, bool bRightSide);
-        bool IsInRightSideGothArea(Unit* pUnit);
-
-        // kel
-        void SetChamberCenterCoords(float fX, float fY, float fZ);
-        void GetChamberCenterCoords(float &fX, float &fY, float &fZ) { fX = m_fChamberCenterX; fY = m_fChamberCenterY; fZ = m_fChamberCenterZ; }
-
-    protected:
-        uint32 m_auiEncounter[MAX_ENCOUNTER];
-        std::string strInstData;
-
-        uint64 m_uiAracEyeRampGUID;
-        uint64 m_uiPlagEyeRampGUID;
-        uint64 m_uiMiliEyeRampGUID;
-        uint64 m_uiConsEyeRampGUID;
-
-        uint64 m_uiAracPortalGUID;
-        uint64 m_uiPlagPortalGUID;
-        uint64 m_uiMiliPortalGUID;
-        uint64 m_uiConsPortalGUID;
-
-        uint64 m_uiAnubRekhanGUID;
-        uint64 m_uiFaerlinanGUID;
-
-        uint64 m_uiZeliekGUID;
-        uint64 m_uiThaneGUID;
-        uint64 m_uiBlaumeuxGUID;
-        uint64 m_uiRivendareGUID;
-
-        uint64 m_uiThaddiusGUID;
-        uint64 m_uiStalaggGUID;
-        uint64 m_uiFeugenGUID;
-
-        uint64 m_uiPathExitDoorGUID;
-        uint64 m_uiGlutExitDoorGUID;
-        uint64 m_uiThadDoorGUID;
-
-        uint64 m_uiAnubDoorGUID;
-        uint64 m_uiAnubGateGUID;
-        uint64 m_uiFaerDoorGUID;
-        uint64 m_uiFaerWebGUID;
-        uint64 m_uiMaexOuterGUID;
-        uint64 m_uiMaexInnerGUID;
-
-        uint64 m_uiGothikGUID;
-        uint64 m_uiGothCombatGateGUID;
-        uint64 m_uiGothikEntryDoorGUID;
-        uint64 m_uiGothikExitDoorGUID;
-        std::list<uint64> m_lGothTriggerList;
-        UNORDERED_MAP<uint64, GothTrigger> m_mGothTriggerMap;
-
-        uint64 m_uiHorsemenDoorGUID;
-        uint64 m_uiHorsemenChestGUID;
-
-        uint64 m_uiNothEntryDoorGUID;
-        uint64 m_uiNothExitDoorGUID;
-        uint64 m_uiHeigEntryDoorGUID;
-        uint64 m_uiHeigExitDoorGUID;
-        uint64 m_uiLoathebDoorGUID;
-
-        uint64 m_uiKelthuzadDoorGUID;
-        float m_fChamberCenterX;
-        float m_fChamberCenterY;
-        float m_fChamberCenterZ;
-
-		uint64 m_uiLane1GUID;
-		uint64 m_uiLane2GUID;
-		uint64 m_uiLane3GUID;
 };
 
 #endif

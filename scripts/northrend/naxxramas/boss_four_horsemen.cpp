@@ -26,6 +26,9 @@ EndScriptData */
 
 enum
 {
+    //Achievements related to the 4-horsemen are given through spell 59450 which does not exist.
+    ACHIEV_MILITARY			= 59450,
+
     //all horsemen
     SPELL_BERSERK           = 26662,
 
@@ -187,7 +190,18 @@ struct MANGOS_DLL_DECL boss_lady_blaumeuxAI : public ScriptedAI
             Creature* pThane = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_THANE));
             Creature* pRivendare = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_RIVENDARE));
             if (pZeliek && pThane && pRivendare && pZeliek->isDead() && pThane->isDead() && pRivendare->isDead())
-                 m_pInstance->SetData(TYPE_FOUR_HORSEMEN, DONE);
+            {
+                m_pInstance->SetData(TYPE_FOUR_HORSEMEN, DONE);
+                 
+
+                Map* pMap = m_creature->GetMap();
+                if (pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEV_MILITARY);
+                }
+            }
         }
     }
 
@@ -368,7 +382,17 @@ struct MANGOS_DLL_DECL boss_sir_zeliekAI : public ScriptedAI
             Creature* pRivendare = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_RIVENDARE));
             Creature* pBlaumeux = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_BLAUMEUX));
             if (pThane && pRivendare && pBlaumeux && pThane->isDead() && pRivendare->isDead() && pBlaumeux->isDead())
+            {
                  m_pInstance->SetData(TYPE_FOUR_HORSEMEN, DONE);
+
+                Map* pMap = m_creature->GetMap();
+                if (pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEV_MILITARY);
+                }
+            }
         }
     }
 
@@ -516,7 +540,17 @@ struct MANGOS_DLL_DECL boss_rivendare_naxxAI : public ScriptedAI
             Creature* pThane = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_THANE));
             Creature* pBlaumeux = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_BLAUMEUX));
             if (pZeliek && pThane && pBlaumeux && pZeliek->isDead() && pThane->isDead() && pBlaumeux->isDead())
+            {
                  m_pInstance->SetData(TYPE_FOUR_HORSEMEN, DONE);
+
+                Map* pMap = m_creature->GetMap();
+                if (pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEV_MILITARY);
+                }
+            }
         }
     }
 
@@ -633,7 +667,17 @@ struct MANGOS_DLL_DECL boss_thane_korthazzAI : public ScriptedAI
             Creature* pRivendare = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_RIVENDARE));
             Creature* pBlaumeux = m_creature->GetMap()->GetCreature(m_pInstance->GetData64(NPC_BLAUMEUX));
             if (pZeliek && pRivendare && pBlaumeux && pZeliek->isDead() && pRivendare->isDead() && pBlaumeux->isDead())
+            {
                  m_pInstance->SetData(TYPE_FOUR_HORSEMEN, DONE);
+
+                Map* pMap = m_creature->GetMap();
+                if (pMap && pMap->IsDungeon())
+                {
+                    Map::PlayerList const &players = pMap->GetPlayers();
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        itr->getSource()->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BE_SPELL_TARGET, ACHIEV_MILITARY);
+                }
+            }
         }
     }
 

@@ -220,6 +220,9 @@ struct MANGOS_DLL_DECL boss_heiganAI : public ScriptedAI
     {
         DoScriptText(SAY_DEATH, m_creature);
 
+        if(m_pInstance)
+			m_pInstance->SetData(TYPE_HEIGAN, DONE);
+
         if (!m_bIsPlayerDeath)
         {
             AchievementEntry const *AchievSafetyDance = GetAchievementStore()->LookupEntry(m_bIsRegularMode ? ACHIEV_SAFETY_DANCE : H_ACHIEV_SAFETY_DANCE);

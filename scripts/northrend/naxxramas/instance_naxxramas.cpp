@@ -97,7 +97,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		uint64 m_uiSappBirthGUID;
 		uint64 m_uiSapphironGUID;
 
-	void instance_naxxramas::Initialize()
+	void Initialize()
 	{
 		memset(&m_auiEncounter, 0, sizeof(m_auiEncounter));
 
@@ -164,7 +164,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		m_uiSapphironGUID = 0;
 	}
 
-	void instance_naxxramas::OnCreatureCreate(Creature* pCreature)
+	void OnCreatureCreate(Creature* pCreature)
 	{
 		switch(pCreature->GetEntry())
 		{
@@ -186,7 +186,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		}
 	}
 
-	void instance_naxxramas::OnObjectCreate(GameObject* pGo)
+	void OnObjectCreate(GameObject* pGo)
 	{
 		switch(pGo->GetEntry())
 		{
@@ -319,7 +319,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		}
 	}
 
-	bool instance_naxxramas::IsEncounterInProgress() const
+	bool IsEncounterInProgress() const
 	{
 		for (uint8 i = 0; i < MAX_ENCOUNTER; ++i)
 			if (m_auiEncounter[i] == IN_PROGRESS)
@@ -328,7 +328,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		return false;
 	}
 
-	void instance_naxxramas::SetData(uint32 uiType, uint32 uiData)
+	void SetData(uint32 uiType, uint32 uiData)
 	{
 		switch(uiType)
 		{
@@ -508,7 +508,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		}
 	}
 
-	void instance_naxxramas::Load(const char* chrIn)
+	void Load(const char* chrIn)
 	{
 		if (!chrIn)
 		{
@@ -533,7 +533,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		OUT_LOAD_INST_DATA_COMPLETE;
 	}
 
-	uint32 instance_naxxramas::GetData(uint32 uiType)
+	uint32 GetData(uint32 uiType)
 	{
 		switch(uiType)
 		{
@@ -573,7 +573,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		return 0;
 	}
 
-	uint64 instance_naxxramas::GetData64(uint32 uiData)
+	uint64 GetData64(uint32 uiData)
 	{
 		switch(uiData)
 		{
@@ -612,7 +612,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 	}
 
 
-	void instance_naxxramas::Update(uint32 uiDiff)
+	void Update(uint32 uiDiff)
 	{
 		if (m_uiLane1Timer < uiDiff)
 		{
@@ -639,7 +639,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		}else m_uiLane3Timer -= uiDiff;
 	}
 	    
-	void instance_naxxramas::SetGothTriggers()
+	void SetGothTriggers()
 	{
 		Creature* pGoth = instance->GetCreature(m_uiGothikGUID);
 
@@ -659,7 +659,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		}
 	}
 
-	Creature* instance_naxxramas::GetClosestAnchorForGoth(Creature* pSource, bool bRightSide)
+	Creature* GetClosestAnchorForGoth(Creature* pSource, bool bRightSide)
 	{
 		std::list<Creature* > lList;
 
@@ -684,7 +684,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		return NULL;
 	}
 
-	void instance_naxxramas::GetGothSummonPointCreatures(std::list<Creature*> &lList, bool bRightSide)
+	void GetGothSummonPointCreatures(std::list<Creature*> &lList, bool bRightSide)
 	{
 		for (UNORDERED_MAP<uint64, GothTrigger>::iterator itr = m_mGothTriggerMap.begin(); itr != m_mGothTriggerMap.end(); ++itr)
 		{
@@ -699,7 +699,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		}
 	}
 
-	bool instance_naxxramas::IsInRightSideGothArea(Unit* pUnit)
+	bool IsInRightSideGothArea(Unit* pUnit)
 	{
 		if (GameObject* pCombatGate = instance->GetGameObject(m_uiGothCombatGateGUID))
 			return (pCombatGate->GetPositionY() >= pUnit->GetPositionY());
@@ -708,7 +708,7 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 		return true;
 	}
 
-	void instance_naxxramas::SetChamberCenterCoords(float fX, float fY, float fZ)
+	void SetChamberCenterCoords(float fX, float fY, float fZ)
 	{
 		m_fChamberCenterX = fX;
 		m_fChamberCenterY = fY;

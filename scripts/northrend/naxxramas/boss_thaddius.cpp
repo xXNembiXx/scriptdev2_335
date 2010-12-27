@@ -154,6 +154,41 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
         }
     }
     
+    void JustDied(Unit* killer)
+    {
+        DoScriptText(SAY_DEATH, m_creature);
+
+        if (m_pInstance)
+            m_pInstance->SetData(TYPE_THADDIUS, DONE);
+
+        Map *map = m_creature->GetMap();
+        if (map->IsDungeon())
+        {
+            Map::PlayerList const &PlayerList = map->GetPlayers();
+
+            if (PlayerList.isEmpty())
+                return;
+
+            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+            {
+                i->getSource()->RemoveAurasDueToSpell(SPELL_CHARGE_POSITIVE_ICON);
+                i->getSource()->RemoveAurasDueToSpell(SPELL_CHARGE_NEGATIVE_ICON);
+                i->getSource()->RemoveAurasDueToSpell(SPELL_CHARGE_POSITIVE_BUFF);
+                i->getSource()->RemoveAurasDueToSpell(SPELL_CHARGE_NEGATIVE_BUFF);
+            }
+        }
+    }
+
+    void KilledUnit(Unit *victim)
+    {
+        switch (rand()%4)
+        {
+            case 0: DoScriptText(SAY_KILL1, m_creature); break;
+            case 1: DoScriptText(SAY_KILL2, m_creature); break;
+            case 2: DoScriptText(SAY_KILL3, m_creature); break;
+            case 3: DoScriptText(SAY_KILL4, m_creature); break;
+        }
+    }
     void UpdateAI(const uint32 uiDiff)
     {
         if (!Activated || !m_creature->SelectHostileTarget() || !m_creature->getVictim())
@@ -365,42 +400,6 @@ struct MANGOS_DLL_DECL boss_thaddiusAI : public ScriptedAI
             Scream_Timer -= uiDiff;
 
         DoMeleeAttackIfReady();
-    }
-
-    void JustDied(Unit* killer)
-    {
-        DoScriptText(SAY_DEATH, m_creature);
-
-        if (m_pInstance)
-            m_pInstance->SetData(TYPE_THADDIUS, DONE);
-
-        Map *map = m_creature->GetMap();
-        if (map->IsDungeon())
-        {
-            Map::PlayerList const &PlayerList = map->GetPlayers();
-
-            if (PlayerList.isEmpty())
-                return;
-
-            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-            {
-                i->getSource()->RemoveAurasDueToSpell(SPELL_CHARGE_POSITIVE_ICON);
-                i->getSource()->RemoveAurasDueToSpell(SPELL_CHARGE_NEGATIVE_ICON);
-                i->getSource()->RemoveAurasDueToSpell(SPELL_CHARGE_POSITIVE_BUFF);
-                i->getSource()->RemoveAurasDueToSpell(SPELL_CHARGE_NEGATIVE_BUFF);
-            }
-        }
-    }
-
-    void KilledUnit(Unit *victim)
-    {
-        switch (rand()%4)
-        {
-            case 0: DoScriptText(SAY_KILL1, m_creature); break;
-            case 1: DoScriptText(SAY_KILL2, m_creature); break;
-            case 2: DoScriptText(SAY_KILL3, m_creature); break;
-            case 3: DoScriptText(SAY_KILL4, m_creature); break;
-        }
     }
 };
 

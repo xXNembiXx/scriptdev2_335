@@ -54,9 +54,11 @@ struct MANGOS_DLL_DECL mob_webwrapAI : public ScriptedAI
 {
     mob_webwrapAI(Creature* pCreature) : ScriptedAI(pCreature)
     {
-        Reset();
+		m_pInstance = (ScriptedInstance*)pCreature->GetInstanceData();
+		Reset();
     }
 
+	ScriptedInstance* m_pInstance;
     uint64 victimGUID;
 
     void Reset()
@@ -68,6 +70,7 @@ struct MANGOS_DLL_DECL mob_webwrapAI : public ScriptedAI
     {
         return;
     }
+
 
     void SetVictim(uint64 victim)
     {
@@ -134,6 +137,7 @@ struct MANGOS_DLL_DECL boss_maexxnaAI : public ScriptedAI
         if (m_pInstance)
             m_pInstance->SetData(TYPE_MAEXXNA, IN_PROGRESS);
     }
+
 
     void DoCastWebWrap()
     {

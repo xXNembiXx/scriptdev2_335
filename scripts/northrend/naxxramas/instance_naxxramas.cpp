@@ -371,123 +371,123 @@ struct MANGOS_DLL_DECL instance_naxxramas : public ScriptedInstance
 					if (uiData == DONE)
 						 DoUseDoorOrButton(m_uiHeigExitDoorGUID);
 					break;
-			case TYPE_LOATHEB:
-				m_auiEncounter[5] = uiData;
-				DoUseDoorOrButton(m_uiLoathebDoorGUID);
-				if (uiData == DONE)
-				{
-					DoUseDoorOrButton(m_uiPlagEyeRampGUID);
-					DoRespawnGameObject(m_uiPlagPortalGUID, 30*MINUTE);
-				}
-				break;
-			case TYPE_RAZUVIOUS:
-				m_auiEncounter[6] = uiData;
-				if (uiData == DONE)
-				{
-					DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
-				}
-				break;
-			case TYPE_GOTHIK:
-				switch(uiData)
-				{
-					case IN_PROGRESS:
-						DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
-						DoUseDoorOrButton(m_uiGothCombatGateGUID);
-						break;
-					case SPECIAL:
-						DoUseDoorOrButton(m_uiGothCombatGateGUID);
-						break;
-					case FAIL:
-						if (m_auiEncounter[7] == IN_PROGRESS)
-							DoUseDoorOrButton(m_uiGothCombatGateGUID);
-
-						DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
-						break;
-					case DONE:
-						DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
-						DoUseDoorOrButton(m_uiGothikExitDoorGUID);
-						DoUseDoorOrButton(m_uiHorsemenDoorGUID);
-						break;
-				}
-				m_auiEncounter[7] = uiData;
-				break;
-			case TYPE_FOUR_HORSEMEN:
-				m_auiEncounter[8] = uiData;
-				DoUseDoorOrButton(m_uiHorsemenDoorGUID);
-				if (uiData == DONE)
-				{
-					DoUseDoorOrButton(m_uiMiliEyeRampGUID);
-					DoRespawnGameObject(m_uiMiliPortalGUID, 30*MINUTE);
-					DoRespawnGameObject(m_uiHorsemenChestGUID, 30*MINUTE);
-				}
-				break;
-			case TYPE_PATCHWERK:
-				m_auiEncounter[9] = uiData;
-				if (uiData == DONE)
-					DoUseDoorOrButton(m_uiPathExitDoorGUID);
-				break;
-			case TYPE_GROBBULUS:
-				m_auiEncounter[10] = uiData;
-				break;
-			case TYPE_GLUTH:
-				m_auiEncounter[11] = uiData;
-				if (uiData == DONE)
-				{
-					DoUseDoorOrButton(m_uiGlutExitDoorGUID);
-					DoUseDoorOrButton(m_uiThadDoorGUID);
-				}
-				break;
-			case TYPE_THADDIUS:
-				m_auiEncounter[12] = uiData;
-				DoUseDoorOrButton(m_uiThadDoorGUID, uiData);
-				if (uiData == DONE)
-				{
-					DoUseDoorOrButton(m_uiConsEyeRampGUID);
-					DoRespawnGameObject(m_uiConsPortalGUID, 30*MINUTE);
-				}
-				break;
-			case TYPE_SAPPHIRON:
-				m_auiEncounter[13] = uiData;
-				if (uiData == DONE)
-					DoUseDoorOrButton(m_uiKelthuzadDoorGUID);
-				break;
-			case TYPE_KELTHUZAD:
-				switch(uiData)
-				{
-					case SPECIAL:
+				case TYPE_LOATHEB:
+					m_auiEncounter[5] = uiData;
+					DoUseDoorOrButton(m_uiLoathebDoorGUID);
+					if (uiData == DONE)
 					{
-						Map::PlayerList const& lPlayers = instance->GetPlayers();
-
-						if (lPlayers.isEmpty())
-							return;
-
-						bool bCanBegin = true;
-
-						for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
-						{
-							if (Player* pPlayer = itr->getSource())
-							{
-								if (!pPlayer->IsWithinDist2d(m_fChamberCenterX, m_fChamberCenterY, 15.0f))
-									bCanBegin = false;
-							}
-						}
-
-						if (bCanBegin)
-							m_auiEncounter[14] = IN_PROGRESS;
-
-						break;
+						DoUseDoorOrButton(m_uiPlagEyeRampGUID);
+						DoRespawnGameObject(m_uiPlagPortalGUID, 30*MINUTE);
 					}
-					case FAIL:
-						m_auiEncounter[14] = NOT_STARTED;
-						break;
-					default:
-						m_auiEncounter[14] = uiData;
-						break;
-				}
-				break;
-			case TYPE_SAPP_BIRTH:
-				m_auiEncounter[15] = uiData;
-				break;
+					break;
+				case TYPE_RAZUVIOUS:
+					m_auiEncounter[6] = uiData;
+					if (uiData == DONE)
+					{
+						DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
+					}
+					break;
+				case TYPE_GOTHIK:
+					switch(uiData)
+					{
+						case IN_PROGRESS:
+							DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
+							DoUseDoorOrButton(m_uiGothCombatGateGUID);
+							break;
+						case SPECIAL:
+							DoUseDoorOrButton(m_uiGothCombatGateGUID);
+							break;
+						case FAIL:
+							if (m_auiEncounter[7] == IN_PROGRESS)
+								DoUseDoorOrButton(m_uiGothCombatGateGUID);
+
+							DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
+							break;
+						case DONE:
+							DoUseDoorOrButton(m_uiGothikEntryDoorGUID);
+							DoUseDoorOrButton(m_uiGothikExitDoorGUID);
+							DoUseDoorOrButton(m_uiHorsemenDoorGUID);
+							break;
+					}
+					m_auiEncounter[7] = uiData;
+					break;
+				case TYPE_FOUR_HORSEMEN:
+					m_auiEncounter[8] = uiData;
+					DoUseDoorOrButton(m_uiHorsemenDoorGUID);
+					if (uiData == DONE)
+					{
+						DoUseDoorOrButton(m_uiMiliEyeRampGUID);
+						DoRespawnGameObject(m_uiMiliPortalGUID, 30*MINUTE);
+						DoRespawnGameObject(m_uiHorsemenChestGUID, 30*MINUTE);
+					}
+					break;
+				case TYPE_PATCHWERK:
+					m_auiEncounter[9] = uiData;
+					if (uiData == DONE)
+						DoUseDoorOrButton(m_uiPathExitDoorGUID);
+					break;
+				case TYPE_GROBBULUS:
+					m_auiEncounter[10] = uiData;
+					break;
+				case TYPE_GLUTH:
+					m_auiEncounter[11] = uiData;
+					if (uiData == DONE)
+					{
+						DoUseDoorOrButton(m_uiGlutExitDoorGUID);
+						DoUseDoorOrButton(m_uiThadDoorGUID);
+					}
+					break;
+				case TYPE_THADDIUS:
+					m_auiEncounter[12] = uiData;
+					DoUseDoorOrButton(m_uiThadDoorGUID, uiData);
+					if (uiData == DONE)
+					{
+						DoUseDoorOrButton(m_uiConsEyeRampGUID);
+						DoRespawnGameObject(m_uiConsPortalGUID, 30*MINUTE);
+					}
+					break;
+				case TYPE_SAPPHIRON:
+					m_auiEncounter[13] = uiData;
+					if (uiData == DONE)
+						DoUseDoorOrButton(m_uiKelthuzadDoorGUID);
+					break;
+				case TYPE_KELTHUZAD:
+					switch(uiData)
+					{
+						case SPECIAL:
+						{
+							Map::PlayerList const& lPlayers = instance->GetPlayers();
+
+							if (lPlayers.isEmpty())
+								return;
+
+							bool bCanBegin = true;
+
+							for(Map::PlayerList::const_iterator itr = lPlayers.begin(); itr != lPlayers.end(); ++itr)
+							{
+								if (Player* pPlayer = itr->getSource())
+								{
+									if (!pPlayer->IsWithinDist2d(m_fChamberCenterX, m_fChamberCenterY, 15.0f))
+										bCanBegin = false;
+								}
+							}
+
+							if (bCanBegin)
+								m_auiEncounter[14] = IN_PROGRESS;
+
+							break;
+						}
+						case FAIL:
+							m_auiEncounter[14] = NOT_STARTED;
+							break;
+						default:
+							m_auiEncounter[14] = uiData;
+							break;
+					}
+					break;
+				case TYPE_SAPP_BIRTH:
+					m_auiEncounter[15] = uiData;
+					break;
 		}
 
 		if (uiData == DONE)

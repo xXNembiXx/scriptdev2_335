@@ -161,6 +161,7 @@ struct MANGOS_DLL_DECL boss_kelthuzadAI : public ScriptedAI
     void KilledUnit(Unit* pVictim)
     {
         DoScriptText(urand(0, 1) ? SAY_SLAY1 : SAY_SLAY2, m_creature);
+
     }
 
     void JustDied(Unit* pKiller)

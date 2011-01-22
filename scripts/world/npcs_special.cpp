@@ -357,7 +357,7 @@ bool QuestAccept_npc_chicken_cluck(Player* pPlayer, Creature* pCreature, const Q
     return true;
 }
 
-bool QuestComplete_npc_chicken_cluck(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
+bool QuestRewarded_npc_chicken_cluck(Player* pPlayer, Creature* pCreature, const Quest* pQuest)
 {
     if (pQuest->GetQuestId() == QUEST_CLUCK)
     {
@@ -1783,6 +1783,7 @@ struct MANGOS_DLL_DECL npc_mirror_imageAI : public ScriptedAI
         if (!owner) 
             return;
 
+		m_creature->SetHealth(owner->GetHealth());
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_0, 2048);
         m_creature->SetUInt32Value(UNIT_FIELD_BYTES_2,owner->GetUInt32Value(UNIT_FIELD_BYTES_2));
         m_creature->SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
@@ -3107,8 +3108,8 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_chicken_cluck";
     newscript->GetAI = &GetAI_npc_chicken_cluck;
-    newscript->pQuestAccept =   &QuestAccept_npc_chicken_cluck;
-    newscript->pQuestComplete = &QuestComplete_npc_chicken_cluck;
+    newscript->pQuestAcceptNPC =   &QuestAccept_npc_chicken_cluck;
+    newscript->pQuestRewardedNPC = &QuestRewarded_npc_chicken_cluck;
     newscript->RegisterSelf();
 
     newscript = new Script;
@@ -3124,7 +3125,7 @@ void AddSC_npcs_special()
     newscript = new Script;
     newscript->Name = "npc_doctor";
     newscript->GetAI = &GetAI_npc_doctor;
-    newscript->pQuestAccept = &QuestAccept_npc_doctor;
+    newscript->pQuestAcceptNPC = &QuestAccept_npc_doctor;
     newscript->RegisterSelf();
 
     newscript = new Script;
